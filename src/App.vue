@@ -1,18 +1,16 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <div class="container mt-8">
+      <h1>Stelita FX</h1>
+      <h3 class="my-4">FX Trading Bot</h3>
+      <p class="lead">Coming soon</p>
+    </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
 export default {
   name: 'app',
-  components: {
-    HelloWorld
-  }
 }
 </script>
 
@@ -23,6 +21,6 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 100px;
 }
 </style>
