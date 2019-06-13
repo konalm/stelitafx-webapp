@@ -1,12 +1,14 @@
 version: '3.3'
 services:
   web:
-    image: node:10.7.0
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: npm run serve
+    working_dir: $PWD
     ports:
       - "8080:8080"
-    command: sh -c 'npm run serve'
-    working_dir: $PWD
-    volumes:
-      - $PWD:$PWD
     expose:
       - "8080"
+    volumes:
+      - $PWD:$PWD
