@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div class="container mt-8">
-      <h1>Stelita FX</h1>
+      <h1>Stelita FX LIVE</h1>
       <h3 class="my-4">FX Trading Bot</h3>
       <p class="lead">Coming soon</p>
     </div>
