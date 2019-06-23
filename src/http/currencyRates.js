@@ -11,14 +11,28 @@ export const currencyPairLatestRateHttpGetRequest = async () => {
   return response.data;
 }
 
-export const currencyWMAHttpGetRequest = async (currency, wmaLength) => {
-  const url = `currency/${currency}/weighted_moving_average/${wmaLength}`
+
+export const currencyWMAHttpGetRequest = async (currency, wmaLength, historical) => {
+  const url = `currency/${currency}/weighted_moving_average/${wmaLength}?historical=${historical}`
 
   let response;
   try {
     response = await apiHttpRequest.get(url);
   } catch (err) {
     throw new Error('currency WMA get http request');
+  }
+
+  return response.data;
+}
+
+export const getCurrencyRateHttpGetRequest = async (currency) => {
+  const url = `currency/${currency}/rate`;
+
+  let response;
+  try {
+    response = await apiHttpRequest.get(url);
+  } catch (err) {
+    throw new Error('get currency rate http get request');
   }
 
   return response.data;

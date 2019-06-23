@@ -9,12 +9,7 @@ switch (host) {
     config = devConfig;
     break;
   case 'fx.api.stelita.app':
-    console.log('yo ????')
     config = prodConfig;
 }
-
-
-console.log('config >>>')
-console.log(config)
 
 module.exports = config;
