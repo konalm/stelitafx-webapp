@@ -3,8 +3,8 @@ import apiHttpRequest from './apiRequest.js';
 /**
  *
  */
-export const getCurrencyTradesHttpRequest = async (algoId, currency) => {
-  const url = `algo/${algoId}/currency/${currency}`
+export const getCurrencyTradesHttpRequest = async (algoProtoNo, currency) => {
+  const url = `algo/${algoProtoNo}/currency/${currency}`
 
   let response;
   try {

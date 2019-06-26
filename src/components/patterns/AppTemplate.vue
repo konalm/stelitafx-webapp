@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-navbar toggleable="lg" type="dark" variant="info">
+    <b-navbar toggleable="lg" class="navbar-dark bg-primary">
       <router-link :to="{name: 'Home'}">
         <b-navbar-brand>Stelita FX</b-navbar-brand>
       </router-link>
@@ -23,6 +23,7 @@
     </div>
   </div>
 </template>
+
 
 <script>
 export default {
