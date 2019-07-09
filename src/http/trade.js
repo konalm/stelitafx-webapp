@@ -3,8 +3,13 @@ import apiHttpRequest from './apiRequest.js';
 /**
  *
  */
-export const getCurrencyTradesHttpRequest = async (algoProtoNo, currency) => {
-  const url = `algo/${algoProtoNo}/currency/${currency}`
+export const getCurrencyTradesHttpRequest =
+  async (algoProtoNo, currency, dateTimeFilter) =>
+{
+  const dateTimeFilterString = dateTimeFilter
+    ? dateTimeFilter.toISOString()
+    : '';
+  const url = `algo/${algoProtoNo}/currency/${currency}?date=${dateTimeFilterString}`
 
   let response;
   try {
