@@ -8,7 +8,7 @@ switch (host) {
   case "localhost":
     config = devConfig;
     break;
-  case 'fx.api.stelita.app':
+  case 'fx.stelita.app':
     config = prodConfig;
 }
 

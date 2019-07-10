@@ -343,7 +343,7 @@ export default {
         .then(res => {
           this.trades = res;
         })
-        .catch(err => {
+        .catch(() => {
           throw new Error('Getting currency trades');
         })
         .finally(() => {
@@ -375,7 +375,7 @@ export default {
       buildBarGraph(this.avgTradesPercentGraphData, 'avg-per-trade')
     },
 
-  
+
     /**
      *
      */
