@@ -76,55 +76,10 @@
     <!-- Line Graph -->
     <div class="line-graph mt-5"></div>
 
-
     <ul class="list-group mt-5">
-      <li class="list-group-item" v-for="trade in tradesGrouped"
-        :key="trade.buy.id"
-      >
-        <!-- header -->
-        <div class="row">
-          <div class="col header">
-            <p v-bind:class=" {
-              'text-success': trade.percentDiff > 0,
-              'text-danger': trade.percentDiff < 0
-            }">
-              <b>{{ trade.percentDiff }} %</b>
-            </p>
-
-            <p>Time between: {{ trade.minsBetween }} mins</p>
-            <p>Date time: {{ formatDate(trade.sell.date) }}
-              {{ formatTime(trade.sell.date) }}
-            </p>
-          </div>
-        </div>
-
-        <div class="row">
-          <!-- SELL -->
-          <div class="col sell" v-if="trade.hasOwnProperty('sell')">
-            <p>
-              <b>
-                {{ formatDate(trade.sell.date) }}
-                <span class="ml-2">{{ formatTime(trade.sell.date) }}</span>
-              </b>
-            </p>
-
-            <p class="lead"> <i class="fas fa-arrow-down"></i>
-              {{ trade.sell.rate }} </p>
-          </div>
-
-          <!-- BUY -->
-          <div class="col buy" v-if="trade.hasOwnProperty('buy')">
-            <p>
-              <b>{{ formatDate(trade.buy.date) }}
-                <span class="ml-2">{{ formatTime(trade.buy.date) }}</span>
-              </b>
-            </p>
-
-            <p class="lead"> <i class="fas fa-arrow-up"></i>
-              {{ trade.sell.rate }} </p>
-          </div>
-        </div>
-      </li>
+      <trade v-for="trade in tradesGrouped" :key="trade.buy.id"
+        :trade="trade"
+      />
     </ul>
 
     <b-alert show variant="warning" v-if="trades.length === 0 && tradesUploaded">
@@ -144,12 +99,14 @@ import {
 import { buildLineGraph } from '@/graph/lineGraph';
 import { buildBarGraph } from '@/graph/barGraph';
 import formatDataForLineGraph from '@/services/formatDataForLineGraph';
+import Trade from './children/Trade';
 
 let FILTER_DATE_TIME = new Date();
 
 export default {
   components: {
-    AppTemplate
+    AppTemplate,
+    Trade
   },
 
   data() {
@@ -276,11 +233,8 @@ export default {
 
   methods: {
     uploadCurrenciesRates() {
-      currenciesRatesHttpGetRequest(this.baseCurrency, 200)
+      currenciesRatesHttpGetRequest(this.baseCurrency, 20)
         .then(res => {
-          let ratesForLineGraph = formatDataForLineGraph(res, 'exchangeRate', 'date');
-
-
           buildLineGraph(ratesForLineGraph);
         });
     },
@@ -323,13 +277,54 @@ export default {
       try {
         wmaDataPoints = await currenciesWMADataPointsHttpGetRequest(
                                 this.baseCurrency,
-                                175
-                              )
+                                100
+                              );
       } catch (err) {
         throw new Error(err);
       }
 
-      buildLineGraph(wmaDataPoints)
+      const lineGraphData = this.dataFormatForLineGraph(wmaDataPoints);
+      buildLineGraph(lineGraphData)
+    },
+
+    /**
+     *
+     */
+    dataFormatForLineGraph(wmaDataPoints) {
+      const buyValue = 1.253000000;
+      const sellValue = 1.25290000;
+
+      const details = [
+        {
+          key: 'rate',
+          colour: 'grey',
+          width: 1
+        }, {
+          key: 'shortWMA',
+          colour: 'blue',
+          width: 1
+        }, {
+          key: 'longWMA',
+          colour: 'red',
+          width: 1
+        }, {
+          key: 'buy',
+          colour: 'rgba(0, 122, 255, 0.4)',
+          width: 2
+        }, {
+          key: 'sell',
+          colour: 'rgba(215, 46, 61, 0.4)',
+          width: 2
+        }
+      ];
+
+      const dataPoints = wmaDataPoints;
+      dataPoints.forEach((d) => {
+        d.buy = buyValue;
+        d.sell = sellValue;
+      });
+
+      return {dataPoints, details}
     },
 
     /**

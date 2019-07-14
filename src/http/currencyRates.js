@@ -14,6 +14,7 @@ export const currencyPairLatestRateHttpGetRequest = async () => {
   return response.data;
 }
 
+
 /**
  *
  */
@@ -56,8 +57,6 @@ export const currenciesRatesHttpGetRequest = async (currency, amount) => {
   } catch {
     throw new Error('get currencies rates http request');
   }
-
-  console.log(response.data)
 
   return response.data.map((row) => {
     return {

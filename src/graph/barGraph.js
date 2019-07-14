@@ -7,9 +7,6 @@ const parseTime = d3.timeParse('%H:%M');
 export const buildBarGraph = (data, className) => {
   if (!data || data.length === 0) return;
 
-  console.log('build graph data')
-  console.log(data)
-
   var margin = {top: 10, right: 0, bottom: 20, left: 50},
       width = 150 - margin.left - margin.right,
       height = 200 - margin.top - margin.bottom;
@@ -40,7 +37,7 @@ export const buildBarGraph = (data, className) => {
   svg.selectAll(".bar")
      .data(data)
      .enter().append("rect")
-     .attr("class", function(d) { return `class ${d.label}`})
+     .attr("class", function(d) { return `${d.label}`})
      .attr("x", function(d) { return x(d.label); })
      .attr("width", x.bandwidth())
      .attr("y", function(d) { return y(d.value); })
