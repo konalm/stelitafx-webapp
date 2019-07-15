@@ -20,6 +20,8 @@
     <div class="row">
       <!-- sell -->
       <div class="col sell" v-if="trade.hasOwnProperty('sell')">
+        <p> {{ trade.sell.id }} </p>
+        
         <p>
           <b>
             {{ formatDate(trade.sell.date) }}
@@ -27,12 +29,15 @@
           </b>
         </p>
 
+
         <p class="lead"> <i class="fas fa-arrow-down"></i>
           {{ trade.sell.rate }} </p>
       </div>
 
       <!-- buy -->
       <div class="col buy" v-if="trade.hasOwnProperty('buy')">
+        <p>{{ trade.buy.id }}</p>
+
         <p>
           <b>{{ formatDate(trade.buy.date) }}
             <span class="ml-2">{{ formatTime(trade.buy.date) }}</span>

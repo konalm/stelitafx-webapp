@@ -99,6 +99,7 @@ import {
 import { buildLineGraph } from '@/graph/lineGraph';
 import { buildBarGraph } from '@/graph/barGraph';
 import formatDataForLineGraph from '@/services/formatDataForLineGraph';
+import groupOrdersIntoTrades from '@/services/groupOrdersIntoTrades';
 import Trade from './children/Trade';
 
 let FILTER_DATE_TIME = new Date();
@@ -190,38 +191,14 @@ export default {
     },
 
     tradesGrouped() {
-      const trades = this.trades;
+      const trades = groupOrdersIntoTrades(this.trades);
 
-      if (trades.length === 0) return [];
-
-      /* first trade needs to be a buy */
-      if (trades[trades.length - 1].transaction === 'sell') {
-        trades.splice(trades.length - 2, trades.length -1);
-      }
-
-      const tradesGrouped = [];
-      for (var i = trades.length - 1; i > 0; i -= 2) {
-        const buy = trades[i];
-        const sell = trades[i - 1];
-        const trade = {
-          percentDiff: this.calcPercentDiff(buy.rate, sell.rate),
-          minsBetween: this.calcMinsBetweenDates(sell.date, buy.date),
-          buy,
-          sell
-        };
-
-        tradesGrouped.push(trade);
-      }
-
-      tradesGrouped.sort((a, b) => {
-        return new Date(b.sell.date) - new Date(a.sell.date);
-      });
-
-      return tradesGrouped
+      return trades
     }
   },
 
   beforeMount() {
+    console.log('ALGO CURRENCY')
     this.algoId = this.$route.params.algoNo;
     this.baseCurrency = this.$route.params.currency;
     this.uploadCurrencyTrades();
