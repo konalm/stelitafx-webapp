@@ -2,12 +2,12 @@
   <li class="list-group-item">
     <!-- header -->
     <div class="row">
-      <div class="col header">
+      <div class="col header p-2">
         <p v-bind:class=" {
-          'text-success': trade.percentDiff > 0,
-          'text-danger': trade.percentDiff < 0
+          'text-success': pips > 0,
+          'text-danger': pips < 0
         }">
-          <b>{{ trade.percentDiff }} %</b>
+          <b>{{ pips }}</b>
         </p>
 
         <p>Time between: {{ trade.minsBetween }} mins</p>
@@ -21,7 +21,7 @@
       <!-- sell -->
       <div class="col sell" v-if="trade.hasOwnProperty('sell')">
         <p> {{ trade.sell.id }} </p>
-        
+
         <p>
           <b>
             {{ formatDate(trade.sell.date) }}
@@ -45,7 +45,7 @@
         </p>
 
         <p class="lead"> <i class="fas fa-arrow-up"></i>
-          {{ trade.sell.rate }} </p>
+          {{ trade.buy.rate }} </p>
       </div>
     </div>
 
@@ -69,6 +69,7 @@
 
 <script>
 import moment from 'moment';
+import pipCalculator from '@/services/pipCalculator';
 
 export default {
   props: {
@@ -84,6 +85,10 @@ export default {
   computed: {
     currency() {
       return this.$route.params.currency;
+    },
+
+    pips() {
+      return pipCalculator(this.trade.buy.rate, this.trade.sell.rate);
     }
   },
 

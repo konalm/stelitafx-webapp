@@ -23,8 +23,8 @@ export default new Router({
       component: Currency
     },
     {
-      path: '/algos',
-      name: 'Algos',
+      path: '/protos',
+      name: 'Protos',
       component: Algos
     },
     {

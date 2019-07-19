@@ -1,3 +1,5 @@
+const isEven = (value) => (value%2 === 0);
+
 /**
  * Takes buy and sell orders and groups them into an array of trades
  * ( a trade being an object with a buy and sell order)
@@ -16,6 +18,16 @@ module.exports = (_orders) => {
   if (orders[0].transaction === 'sell') orders.splice(0, 1);
 
   orders = sortOrderTransactionSequence(orders);
+
+  console.log('orders length after sequence >>>')
+  console.log(orders.length)
+
+  /* TODO >> if last order is a buy, splice it); */
+  console.log(orders[orders.length - 1].transaction);
+
+  if (!isEven(orders.length)) orders.pop();
+
+
 
   const trades = [];
   for (let i = 0; i <= orders.length - 1; i += 2) {
@@ -43,6 +55,9 @@ module.exports = (_orders) => {
   trades.sort((a, b) => {
     return new Date(b.sell.date) - new Date(a.sell.date);
   });
+
+  console.log('trades >>>');
+  console.log(trades)
 
   return trades
 }

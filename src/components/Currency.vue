@@ -5,22 +5,15 @@
         <p class="lead">{{ abbrev }}</p>
         <p>Quote: {{ quoteCurrency }}</p>
         <p>Currency pair abbrev: {{ currencyPairAbbrev }}</p>
+        <p>Currency Rate: {{ rate }}</p>
       </div>
     </div>
 
-    <div class="row mt-5">
-      <div class="col">
-        <p>Current Rate: {{ rate }}</p>
-        <p>short WMA: {{ shortWMA }} </p>
-        <p>long WMA: {{ longWMA }} </p>
-      </div>
-    </div>
-
-    <b-list-group class="mt-4">
-      <b-list-group-item v-for="algo in algos" :key="algo.prototype_no">
-        <p class="lead">prototype {{ algo.prototype_no }}</p>
-        <small>{{ algo.description }}</small>
-
+    <b-list-group horizontal class="mt-5 text-center">
+      <b-list-group-item v-for="algo in algos" :key="algo.prototype_no"
+        class="mr-3 px-5"
+      >
+        <p class="lead">Prototype #{{ algo.prototype_no }}</p>
         <p class="mt-3">
           <router-link :to="{name: 'AlgoCurrency',
             params: {

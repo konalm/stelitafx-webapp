@@ -1,13 +1,15 @@
 <template>
   <app-template>
-    <div class="row top-row">
-      <div class="col-sm-3">
+    <b-row>
+      <!-- header & filters -->
+      <b-col>
         <p class="lead">Prototype: {{ algoId }}</p>
         <p class="lead">Currency: <b>{{ baseCurrency }}/{{ quoteCurrency }}</b></p>
 
-        <b-field class="mt-5">
+        <!-- date filter -->
+        <b-field class="mt-4">
           <b-datepicker placeholder="Filter date..." icon="calendar-today"
-            v-model="filterDate"
+          v-model="filterDate"
           />
 
           <b-button class="ml-2" variant="danger" v-on:click="clearDate()">
@@ -15,9 +17,10 @@
           </b-button>
         </b-field>
 
-        <b-field class="mt-1">
+        <!-- time filter -->
+        <b-field class="mt-2">
           <b-timepicker placeholder="Filter time..." icon="clock"
-            v-model="filterTime"
+          v-model="filterTime"
           />
 
           <b-button class="ml-2" variant="danger" v-on:click="clearTime()">
@@ -26,58 +29,53 @@
         </b-field>
 
         <b-button v-on:click="uploadCurrencyTrades()">Update</b-button>
-      </div>
+      </b-col>
 
-      <div class="col-md-6 ml-5">
-        <!-- Trades -->
-        <b-card>
-          <div class="row">
-            <div class="col">
-              <p>Total profit %
-                <span class="text-success">{{ profitTradesPercent }}</span>
-              </p>
-              <p>Total loss %
-                <span class="text-danger">{{ lossTradesPercent }}</span>
-              </p>
-            </div>
+      <!-- stats -->
+      <b-col col lg="2">
+        <b-card class="mt-2">
+          <p> Pips gained
+            <span class="text-success">{{ totalPips.gained }}</span>
+          </p>
 
-            <div class="col">
-              <p class="lead mt-4">
-                <b>
-                  <span v-bind:class="{
-                    'text-success': sumPercent > 0,
-                    'text-danger': sumPercent < 0
-                  }">
-                    {{ sumPercent }}
-                  </span>
-                </b>
-              </p>
-            </div>
-          </div>
+          <p> Pips loss
+            <span class="text-danger">{{ totalPips.loss }}</span>
+          </p>
+
+          <p class="lead mt-4">
+            <b>
+              <span v-bind:class="{
+                'text-success': totalPips.gained - totalPips.loss > 0,
+                'text-danger': totalPips.gained - totalPips.loss < 0
+              }">
+                {{ totalPips.gained - totalPips.loss }}
+              </span>
+            </b>
+          </p>
         </b-card>
+      </b-col>
 
-        <b-row class="mt-4">
-          <b-col>
-            <b-card title="Trades">
-              <b-card-text>Total {{ totalTrades }}</b-card-text>
-              <div class="bar-graph trades"></div>
-            </b-card>
-          </b-col>
+      <!-- trades graph -->
+      <b-col col lg="3">
+        <b-card title="Trades">
+          <b-card-text>Total {{ totalTrades }}</b-card-text>
+          <div class="bar-graph trades"></div>
+        </b-card>
+      </b-col>
 
-          <b-col>
-            <b-card title="Avg % Per Trade">
-              <div class="bar-graph avg-per-trade"></div>
-            </b-card>
-          </b-col>
-        </b-row>
-      </div>
-    </div>
+      <!-- avg per trade graph -->
+      <b-col col lg="3">
+        <b-card title="Avg pips Per Trade">
+          <div class="bar-graph avg-per-trade"></div>
+        </b-card>
+      </b-col>
+    </b-row>
 
     <!-- Line Graph -->
     <div class="line-graph mt-5"></div>
 
     <ul class="list-group mt-5">
-      <trade v-for="trade in tradesGrouped" :key="trade.buy.id"
+      <trade v-for="trade in trades" :key="trade.buy.id"
         :trade="trade"
       />
     </ul>
@@ -101,6 +99,7 @@ import { buildBarGraph } from '@/graph/barGraph';
 import formatDataForLineGraph from '@/services/formatDataForLineGraph';
 import groupOrdersIntoTrades from '@/services/groupOrdersIntoTrades';
 import Trade from './children/Trade';
+import pipCalculator from '@/services/pipCalculator';
 
 let FILTER_DATE_TIME = new Date();
 
@@ -125,11 +124,31 @@ export default {
 
   computed: {
     totalTrades() {
-      return this.tradesGrouped.length;
+      return this.trades.length;
+    },
+
+    totalPips() {
+      let gained = 0;
+      let loss = 0;
+      this.trades.forEach((trade) => {
+        const pip = pipCalculator(trade.buy.rate, trade.sell.rate);
+        if (pip > 0) gained += pip
+        if (pip < 0) loss += pip * -1
+      });
+
+      return {gained, loss};
     },
 
     profitTrades() {
-      return this.tradesGrouped.filter((trade) => trade.percentDiff > 0)
+      return this.trades.filter((trade) =>
+        pipCalculator(trade.buy.rate, trade.sell.rate) > 0
+      )
+    },
+
+    lossTrades() {
+      return this.trades.filter((trade) =>
+        pipCalculator(trade.buy.rate, trade.sell.rate) < 0
+      )
     },
 
     profitTradesAmount() {
@@ -156,10 +175,6 @@ export default {
       return this.profitTradesPercent - this.lossTradesPercent;
     },
 
-    lossTrades() {
-      return this.tradesGrouped.filter((trade) => trade.percentDiff < 0)
-    },
-
     lossTradesAmount() {
       return this.lossTrades.length
     },
@@ -177,7 +192,7 @@ export default {
       ]
     },
 
-    avgTradesPercentGraphData() {
+    avgPipsPerTradeGraph() {
       return [
         {
           label: 'Avg Profit',
@@ -189,12 +204,6 @@ export default {
         }
       ];
     },
-
-    tradesGrouped() {
-      const trades = groupOrdersIntoTrades(this.trades);
-
-      return trades
-    }
   },
 
   beforeMount() {
@@ -254,7 +263,7 @@ export default {
       try {
         wmaDataPoints = await currenciesWMADataPointsHttpGetRequest(
                                 this.baseCurrency,
-                                100
+                                40
                               );
       } catch (err) {
         throw new Error(err);
@@ -313,7 +322,7 @@ export default {
 
       getCurrencyTradesHttpRequest(this.algoId, this.baseCurrency, dateTimeFilter)
         .then(res => {
-          this.trades = res;
+          this.trades = groupOrdersIntoTrades(res);
         })
         .catch(() => {
           throw new Error('Getting currency trades');
@@ -344,7 +353,7 @@ export default {
     },
 
     avgProfitPercent() {
-      buildBarGraph(this.avgTradesPercentGraphData, 'avg-per-trade')
+      buildBarGraph(this.avgPipsPerTradeGraph, 'avg-per-trade')
     },
 
 
@@ -380,11 +389,7 @@ export default {
 </script>
 
 
-<style lang="scss">
-.top-row {
-  justify-content: space-between;
-}
-
+<style lang="scss" scoped>
 .list-group {
   flex-wrap: wrap;
   flex-direction: row;

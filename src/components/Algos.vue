@@ -1,11 +1,17 @@
 <template>
   <app-template>
-    <b-list-group class="mt-4">
-      <b-list-group-item v-for="algo in algos" :key="algo.prototype_no">
-        <p class="lead">prototype {{ algo.prototype_no }}</p>
-        <small>{{ algo.description }}</small>
-      </b-list-group-item>
-    </b-list-group>
+    <b-row>
+      <b-col v-for="algo in algos" :key="algo.prototype_no">
+        <b-card>
+            <p class="lead">prototype #{{ algo.prototype_no }}</p>
+            <p><small>{{ algo.description }}</small></p>
+
+            <router-link :to="{name: 'Proto', params: {id: algo.prototype_no}}">
+              <b-button variant="primary" class="mt-4">View</b-button>
+            </router-link>
+        </b-card>
+      </b-col>
+    </b-row>
   </app-template>
 </template>
 
