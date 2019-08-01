@@ -19,15 +19,7 @@ module.exports = (_orders) => {
 
   orders = sortOrderTransactionSequence(orders);
 
-  console.log('orders length after sequence >>>')
-  console.log(orders.length)
-
-  /* TODO >> if last order is a buy, splice it); */
-  console.log(orders[orders.length - 1].transaction);
-
   if (!isEven(orders.length)) orders.pop();
-
-
 
   const trades = [];
   for (let i = 0; i <= orders.length - 1; i += 2) {
@@ -55,9 +47,6 @@ module.exports = (_orders) => {
   trades.sort((a, b) => {
     return new Date(b.sell.date) - new Date(a.sell.date);
   });
-
-  console.log('trades >>>');
-  console.log(trades)
 
   return trades
 }

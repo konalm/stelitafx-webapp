@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "deploy": "vue-cli-service build && scp -r dist/* root@138.68.167.173:/var/www/stelita-fx",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {

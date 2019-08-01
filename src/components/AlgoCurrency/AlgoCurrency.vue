@@ -71,13 +71,31 @@
       </b-col>
     </b-row>
 
-    <!-- Line Graph -->
-    <div class="line-graph mt-5"></div>
+    <ul class="nav nav-pills">
+      <li class="nav-item">
+        <a class="nav-link"
+          v-bind:class="{active: subView === 1}"
+          v-on:click="changeSubView(1)"
+        >
+          Graph
+        </a>
+      </li>
 
-    <ul class="list-group mt-5">
-      <trade v-for="trade in trades" :key="trade.buy.id"
-        :trade="trade"
-      />
+      <li>
+        <a class="nav-link"
+          v-bind:class="{active: subView === 2}"
+          v-on:click="changeSubView(2)"
+        >
+          Trades
+        </a>
+      </li>
+    </ul>
+
+    <!-- Line Graph -->
+    <div class="line-graph mt-5" v-if="subView === 1"></div>
+
+    <ul class="list-group mt-5" v-if="subView === 2">
+      <trade v-for="trade in trades" :key="trade.id" :trade="trade" />
     </ul>
 
     <b-alert show variant="warning" v-if="trades.length === 0 && tradesUploaded">
@@ -94,12 +112,12 @@ import { getCurrencyTradesHttpRequest } from '@/http/trade';
 import {
   currenciesRatesHttpGetRequest, currenciesWMADataPointsHttpGetRequest
 } from '@/http/currencyRates';
+import { getHttpRequest } from '@/http/apiRequestV2';
 import { buildLineGraph } from '@/graph/lineGraph';
 import { buildBarGraph } from '@/graph/barGraph';
 import formatDataForLineGraph from '@/services/formatDataForLineGraph';
 import groupOrdersIntoTrades from '@/services/groupOrdersIntoTrades';
 import Trade from './children/Trade';
-import pipCalculator from '@/services/pipCalculator';
 
 let FILTER_DATE_TIME = new Date();
 
@@ -119,6 +137,7 @@ export default {
       tradesUploaded: false,
       filterDate: null,
       filterTime: null,
+      subView: 1
     }
   },
 
@@ -131,9 +150,8 @@ export default {
       let gained = 0;
       let loss = 0;
       this.trades.forEach((trade) => {
-        const pip = pipCalculator(trade.buy.rate, trade.sell.rate);
-        if (pip > 0) gained += pip
-        if (pip < 0) loss += pip * -1
+        if (trade.pips > 0) gained += trade.pips
+        if (trade.pips < 0) loss += trade.pips * -1
       });
 
       return {gained, loss};
@@ -141,53 +159,25 @@ export default {
 
     profitTrades() {
       return this.trades.filter((trade) =>
-        pipCalculator(trade.buy.rate, trade.sell.rate) > 0
+        trade.pips > 0
       )
     },
 
     lossTrades() {
       return this.trades.filter((trade) =>
-        pipCalculator(trade.buy.rate, trade.sell.rate) < 0
+        trade.pips < 0
       )
-    },
-
-    profitTradesAmount() {
-      return this.profitTrades.length
-    },
-
-    avgProfitPercent() {
-      return this.profitTradesPercent / this.profitTradesAmount;
-    },
-
-    avgLossPercent() {
-      return this.lossTradesPercent / this.lossTradesAmount;
-    },
-
-    profitTradesPercent() {
-      return this.profitTrades.reduce((acc, currentValue) => acc + currentValue.percentDiff, 0)
-    },
-
-    lossTradesPercent() {
-      return this.lossTrades.reduce((acc, currentValue) => acc + currentValue.percentDiff, 0) * -1
-    },
-
-    sumPercent() {
-      return this.profitTradesPercent - this.lossTradesPercent;
-    },
-
-    lossTradesAmount() {
-      return this.lossTrades.length
     },
 
     tradesBarGraphData() {
       return [
         {
           label: 'Profit',
-          value: this.profitTradesAmount,
+          value: this.profitTrades.length,
         },
         {
           label: 'Loss',
-          value: this.lossTradesAmount,
+          value: this.lossTrades.length,
         }
       ]
     },
@@ -196,18 +186,17 @@ export default {
       return [
         {
           label: 'Avg Profit',
-          value: this.avgProfitPercent
+          value: this.totalPips.gained / this.profitTrades.length,
         },
         {
           label: 'Avg Loss',
-          value: this.avgLossPercent
+          value: this.totalPips.loss / this.lossTrades.length
         }
       ];
     },
   },
 
   beforeMount() {
-    console.log('ALGO CURRENCY')
     this.algoId = this.$route.params.algoNo;
     this.baseCurrency = this.$route.params.currency;
     this.uploadCurrencyTrades();
@@ -218,8 +207,12 @@ export default {
   },
 
   methods: {
+    changeSubView(viewNo) {
+      this.subView = viewNo;
+    },
+
     uploadCurrenciesRates() {
-      currenciesRatesHttpGetRequest(this.baseCurrency, 20)
+      currenciesRatesHttpGetRequest(this.baseCurrency, 100)
         .then(res => {
           buildLineGraph(ratesForLineGraph);
         });
@@ -236,8 +229,7 @@ export default {
     calcMinsBetweenDates(dateAString, dateBString) {
       const dateA = new Date(dateAString);
       const dateB = new Date(dateBString);
-
-      var diffMs = (dateA - dateB); // milliseconds between now & Christmas
+      const  diffMs = (dateA - dateB);
 
       return Math.round(((diffMs % 86400000) % 3600000) / 60000); // minutes
     },
@@ -270,6 +262,7 @@ export default {
       }
 
       const lineGraphData = this.dataFormatForLineGraph(wmaDataPoints);
+
       buildLineGraph(lineGraphData)
     },
 
@@ -277,38 +270,38 @@ export default {
      *
      */
     dataFormatForLineGraph(wmaDataPoints) {
-      const buyValue = 1.253000000;
-      const sellValue = 1.25290000;
+      const dataPoints = wmaDataPoints.map((dataPoint) => ({
+        date: dataPoint.date,
+        rate: dataPoint.rate,
+        fiveWMA: dataPoint.WMAs["5"],
+        twelveWMA: dataPoint.WMAs["12"],
+        fifteenWMA: dataPoint.WMAs["15"],
+        thirtySixWMA: dataPoint.WMAs["36"]
+      }));
 
       const details = [
         {
           key: 'rate',
-          colour: 'grey',
-          width: 1
+          colour: 'black',
+          width: 1,
         }, {
-          key: 'shortWMA',
+          key: 'fiveWMA',
           colour: 'blue',
-          width: 1
+          width: 2
         }, {
-          key: 'longWMA',
+          key: 'twelveWMA',
           colour: 'red',
+          width: 2
+        }, {
+          key: 'fifteenWMA',
+          colour: 'rgba(0, 122, 255, 0.4)',
           width: 1
         }, {
-          key: 'buy',
-          colour: 'rgba(0, 122, 255, 0.4)',
-          width: 2
-        }, {
-          key: 'sell',
+          key: 'thirtySixWMA',
           colour: 'rgba(215, 46, 61, 0.4)',
-          width: 2
+          width: 1
         }
       ];
-
-      const dataPoints = wmaDataPoints;
-      dataPoints.forEach((d) => {
-        d.buy = buyValue;
-        d.sell = sellValue;
-      });
 
       return {dataPoints, details}
     },
@@ -320,9 +313,10 @@ export default {
       /* only pass datetime filter if date filter has been populated */
       const dateTimeFilter = this.filterDate ? FILTER_DATE_TIME : null;
 
-      getCurrencyTradesHttpRequest(this.algoId, this.baseCurrency, dateTimeFilter)
+      const path = `/proto/${this.algoId}/currency/${this.baseCurrency}`
+      getHttpRequest(path)
         .then(res => {
-          this.trades = groupOrdersIntoTrades(res);
+          this.trades = res
         })
         .catch(() => {
           throw new Error('Getting currency trades');
@@ -344,15 +338,19 @@ export default {
 
 
   watch: {
+    subView(value) {
+      if (value === 1) this.uploadWMAGraph()
+    },
+
     profitTradeAmount() {
       buildBarGraph(this.tradesBarGraphData, 'trades');
     },
 
-    lossTradesAmount() {
+    tradesBarGraphData() {
       buildBarGraph(this.tradesBarGraphData, 'trades')
     },
 
-    avgProfitPercent() {
+    avgPipsPerTradeGraph() {
       buildBarGraph(this.avgPipsPerTradeGraph, 'avg-per-trade')
     },
 
@@ -432,6 +430,7 @@ export default {
   min-height: 450px;
   border: 1px solid grey;
   padding: 10px;
+  margin-bottom: 20px;
 }
 
 .bar-graph {

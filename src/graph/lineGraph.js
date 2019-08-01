@@ -39,8 +39,16 @@ export const buildLineGraph = (data) => {
   // Scale the range of the data
   x.domain(d3.extent(dataPoints, (d) => d.date));
   y.domain([
-    d3.min(dataPoints, (d) =>  Math.min(d.rate, d.shortWMA, d.longWMA) ),
-    d3.max(dataPoints, (d) =>  Math.max(d.rate, d.shortWMA, d.longWMA) )
+    d3.min(dataPoints, (d) => {
+      let keyValues = [];
+      data.details.forEach((detail) => keyValues.push(d[detail.key]) )
+      return Math.min(...keyValues)
+    }),
+    d3.max(dataPoints, (d) =>  {
+      let keyValues = [];
+      data.details.forEach((detail) => keyValues.push(d[detail.key]) )
+      return Math.max(...keyValues)
+    })
   ]);
 
   valueLines.forEach((valueLine) => {

@@ -1,10 +1,19 @@
 <template>
   <app-template>
     <b-row class="mt-5">
-      <currency-rate v-for="currencyRate in currencyPairsLatestRates"
-        :key="currencyRate.UUID"
-        :currencyRate="currencyRate"
-      />
+      <b-col class="text-center" v-for="currency in majorCurrencyAbbrevs">
+        <b-card v-bind:title="currency.pairAbbrev">
+          <div class="row mt-4">
+            <div class="col">
+              <router-link :to="{name: 'Currency',
+                params: { abbrev: currency.baseAbbrev }}"
+              >
+                <b-button variant="primary" class="px-4">View</b-button>
+              </router-link>
+            </div>
+          </div>
+        </b-card>
+      </b-col>
     </b-row>
   </app-template>
 </template>
@@ -16,8 +25,7 @@ import {
   currencyPairLatestRateHttpGetRequest,
   currencyWMAHttpGetRequest
 } from '@/http/currencyRates';
-import CurrencyRate from '@/components/CurrencyRate.vue';
-
+import { getHttpRequest } from '@/http/apiRequestV2';
 
 const currencyPreview = {
   date: '',
@@ -30,8 +38,7 @@ export default {
   name: 'app',
 
   components: {
-    AppTemplate,
-    CurrencyRate
+    AppTemplate
   },
 
   data() {
@@ -41,23 +48,21 @@ export default {
       EURCurrency: currencyPreview,
       GBPCurrency: currencyPreview,
       JPYCurrency: currencyPreview,
+      majorCurrencyAbbrevs: []
     }
   },
 
   beforeMount() {
-    this.getCurrencyRatesLatestRates();
+    this.uploadMajorCurrencyPairAbbrev();
   },
 
   methods: {
-    getCurrencyRatesLatestRates() {
-      currencyPairLatestRateHttpGetRequest()
-        .then(response => {
-          this.currencyPairsLatestRates = response;
+    uploadMajorCurrencyPairAbbrev() {
+      const url = "major-currencypair-abbrevs";
+      getHttpRequest(url)
+        .then(res => {
+          this.majorCurrencyAbbrevs = res;
         })
-    },
-
-    getCurrencyMVA(currency, wmaLength) {
-      currencyWMAHttpGetRequest(currency, wmaLength);
     }
   }
 }

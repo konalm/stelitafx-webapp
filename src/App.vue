@@ -19,7 +19,7 @@ export default {
   color: #2c3e50;
 }
 
-.Gain {
+.Gain, .Profit {
   fill: #28a745;
 }
 

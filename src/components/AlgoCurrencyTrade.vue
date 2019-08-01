@@ -8,36 +8,36 @@
     </b-row>
 
     <b-row class="mt-4">
-      <!-- buy -->
+      <!-- open -->
       <b-col>
         <b-card class="buy">
           <p>
             <b>
-              {{ formatDate(buyTrade.date) }}
-              <span class="ml-2">{{ formatTime(buyTrade.date) }}</span>
+              {{ formatDate(trade.openDate) }}
+              <span class="ml-2">{{ formatTime(trade.openDate) }}</span>
             </b>
           </p>
 
           <p class="lead">
             <i class="fas fa-arrow-up"></i>
-            {{ buyTrade.rate }}
+            {{ trade.openRate }}
           </p>
         </b-card>
       </b-col>
 
-      <!-- sell -->
+      <!-- close -->
       <b-col>
         <b-card class="sell">
           <p>
             <b>
-              {{ formatDate(sellTrade.date) }}
-              <span class="ml-2">{{ formatTime(sellTrade.date) }}</span>
+              {{ formatDate(trade.closeDate) }}
+              <span class="ml-2">{{ formatTime(trade.closeDate) }}</span>
             </b>
           </p>
 
           <p class="lead">
             <i class="fas fa-arrow-down"></i>
-            {{ sellTrade.rate }}
+            {{ trade.closeRate }}
           </p>
         </b-card>
       </b-col>
@@ -45,10 +45,10 @@
       <b-col>
         <b-card class="summary">
           <p v-bind:class="{
-            'text-success': tradePercentDiff > 0,
-            'text-danger': tradePercentDiff < 0
+            'text-success': trade.pips > 0,
+            'text-danger': trade.pips < 0
             }">
-              % {{ tradePercentDiff }}
+              {{ trade.pips }}
             </p>
 
           <p> Duration: {{ minsBetween }} mins </p>
@@ -79,33 +79,34 @@ export default {
 
   data() {
     return {
-      buyTrade: {},
-      sellTrade: {}
+      trade: {},
+      wmaData: []
     }
   },
 
   beforeMount() {
-    this.uploadTradeTransactions();
+    console.log('algo currency trade !!')
+    this.uploadTrade();
   },
 
   mounted() {
-    this.buildLineGraph();
+    this.uploadWMAData();
   },
 
   computed: {
     tradePercentDiff() {
-      const diff = this.buyTrade.rate - this.sellTrade.rate;
-      return (diff / this.buyTrade.rate * 100) * -1;
+      const diff = this.trade.openRate - this.trade.closeRate;
+      return (diff / this.trade.openRate * 100) * -1;
     },
 
     /**
      * minutes between the buy and sell order
      */
     minsBetween() {
-      const buyDate = new Date(this.buyTrade.date);
-      const sellDate = new Date(this.sellTrade.date);
+      const buyDate = new Date(this.trade.openDate);
+      const sellDate = new Date(this.trade.closeDate);
 
-      var diffMs = (sellDate - buyDate); // milliseconds between now & Christmas
+      var diffMs = (sellDate - buyDate);
 
       return Math.round(((diffMs % 86400000) % 3600000) / 60000); // minutes
     },
@@ -118,95 +119,106 @@ export default {
       return this.$route.params.currency
     },
 
-    buyId() {
-      return this.$route.params.buyTradeId;
+    tradeId() {
+      return this.$route.params.tradeId;
     },
 
-    sellId() {
-      return this.$route.params.sellTradeId;
+    /**
+     *
+     */
+    formattedDataForLineGraph() {
+      const dataPoints = this.wmaData.map((dataPoint) => ({
+        date: dataPoint.date,
+        rate: dataPoint.rate,
+        openRate: this.trade.openRate,
+        closeRate: this.trade.closeRate,
+        fiveWMA: dataPoint.WMAs["5"],
+        twelveWMA: dataPoint.WMAs["12"],
+        fifteenWMA: dataPoint.WMAs["15"],
+        thirtySixWMA: dataPoint.WMAs["36"]
+      }));
+      let details = [
+        {
+          key: 'rate',
+          colour: 'black',
+          width: 1,
+        }, {
+          key: 'openRate',
+          colour: 'rgba(0, 122, 255, 0.4)',
+          width: 3,
+        }, {
+          key: 'closeRate',
+          colour: 'rgba(215, 46, 61, 0.4)',
+          width: 3,
+        }
+        // {
+        //   key: 'fiveWMA',
+        //   colour: 'blue',
+        //   width: 1
+        // }, {
+        //   key: 'twelveWMA',
+        //   colour: 'red',
+        //   width: 1
+        // }, {
+        //   key: 'fifteenWMA',
+        //   colour: 'orange',
+        //   width: 1
+        // }, {
+        //   key: 'thirtySixWMA',
+        //   colour: 'purple',
+        //   width: 1
+        // }
+      ];
+
+      const protoNo = parseInt(this.protoNo);
+
+      if (protoNo === 1 || protoNo === 2 || protoNo === 3) {
+        details = details.concat(this.wmaDetailsForProtoOneAndTwo)
+      }
+
+      return { dataPoints, details };
+    },
+
+    wmaDetailsForProtoOneAndTwo() {
+      return [
+        {
+          key: 'twelveWMA',
+          colour: 'blue',
+          width: 1
+        },
+        {
+          key: 'thirtySixWMA',
+          colour: 'red',
+          width: 1
+        }
+      ];
     }
+
   },
 
   methods: {
-    /**
-     *
-     */
-     async buildLineGraph() {
-       const wmaData = await this.getWMADataForGraph();
-       const formattedData = this.formattedDataForLineGraph(wmaData);
-
-       buildLineGraph(formattedData);
-     },
-
-     /**
-     *
-     */
-     formattedDataForLineGraph(wmaData) {
-       const details = [
-         {
-           key: 'rate',
-           colour: 'grey',
-           width: 1
-         },
-         {
-           key: 'shortWMA',
-           colour: 'blue',
-           width: 1
-         },
-         {
-           key: 'longWMA',
-           colour: 'red',
-           width: 1
-         }, {
-           key: 'buy',
-           colour: 'rgba(0, 122, 255, 0.4)',
-           width: 2
-         }, {
-           key: 'sell',
-           colour: 'rgba(215, 46, 61, 0.4)',
-           width: 2
-         }
-       ];
-
-       const dataPoints = wmaData;
-       dataPoints.forEach((d) => {
-         d.buy = this.buyTrade.rate;
-         d.sell = this.sellTrade.rate;
-       })
-
-       return { details, dataPoints };
-     },
-
-    /**
-     *
-     */
-    async getWMADataForGraph() {
-      const path = `wma/${this.currency}/buy/${this.buyId}/sell/${this.sellId}`;
-      return await getHttpRequest(path);
-    },
-
-    /**
-     *
-     */
-    uploadTradeTransactions() {
-      this.getTrade(this.buyId)
+    uploadWMAData() {
+      const path = `wma/${this.currency}/trade/${this.tradeId}`;
+      getHttpRequest(path)
         .then(res => {
-          this.buyTrade = res;
-        });
-
-      this.getTrade(this.sellId)
-        .then(res => {
-          this.sellTrade = res;
+          this.wmaData = res;
+        })
+        .catch(err => {
+          throw new Error('uploading WMA data for Alog currency trade');
         })
     },
 
     /**
      *
      */
-    async getTrade(id) {
-      const path = `algo/${this.protoNo}/currency/${this.currency}/trade/${id}`
-      return await getHttpRequest(path);
+    uploadTrade() {
+      const path = `proto/${this.protoNo}/currency/${this.currency}/trade/${this.tradeId}`
+      getHttpRequest(path)
+        .then(res => {
+          this.trade = res;
+        });
     },
+
 
     formatDate(date) {
       return moment(date).format('DD/MM/YYYY')
@@ -215,6 +227,12 @@ export default {
     formatTime(date) {
       return moment(date).format('HH:mm')
     },
+  },
+
+  watch: {
+    formattedDataForLineGraph(value) {
+      buildLineGraph(value);
+    }
   }
 }
 </script>

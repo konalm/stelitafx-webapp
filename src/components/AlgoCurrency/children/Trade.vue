@@ -4,48 +4,45 @@
     <div class="row">
       <div class="col header p-2">
         <p v-bind:class=" {
-          'text-success': pips > 0,
-          'text-danger': pips < 0
+          'text-success': trade.pips > 0,
+          'text-danger': trade.pips < 0
         }">
-          <b>{{ pips }}</b>
+          <b>{{ trade.pips }}</b>
         </p>
 
-        <p>Time between: {{ trade.minsBetween }} mins</p>
-        <p>Date time: {{ formatDate(trade.sell.date) }}
-          {{ formatTime(trade.sell.date) }}
+        <p>{{ minsTradeWasOpen }} mins</p>
+        <p>{{ formatDate(trade.closeDate) }}
+          {{ formatTime(trade.closeDate) }}
         </p>
       </div>
     </div>
 
-    <div class="row">
-      <!-- sell -->
-      <div class="col sell" v-if="trade.hasOwnProperty('sell')">
-        <p> {{ trade.sell.id }} </p>
-
+    <div class="row p-2">
+      <!-- close -->
+      <div class="col sell rounded py-2">
         <p>
           <b>
-            {{ formatDate(trade.sell.date) }}
-            <span class="ml-2">{{ formatTime(trade.sell.date) }}</span>
+            {{ formatDate(trade.closeDate) }}
+            <span class="ml-2">{{ formatTime(trade.closeDate) }}</span>
           </b>
         </p>
 
-
         <p class="lead"> <i class="fas fa-arrow-down"></i>
-          {{ trade.sell.rate }} </p>
+          {{ trade.closeRate }} </p>
       </div>
 
-      <!-- buy -->
-      <div class="col buy" v-if="trade.hasOwnProperty('buy')">
-        <p>{{ trade.buy.id }}</p>
+      <div class="mx-1"></div>
 
+      <!-- open -->
+      <div class="col buy rounded py-2">
         <p>
-          <b>{{ formatDate(trade.buy.date) }}
-            <span class="ml-2">{{ formatTime(trade.buy.date) }}</span>
+          <b>{{ formatDate(trade.openDate) }}
+            <span class="ml-2">{{ formatTime(trade.openDate) }}</span>
           </b>
         </p>
 
         <p class="lead"> <i class="fas fa-arrow-up"></i>
-          {{ trade.buy.rate }} </p>
+          {{ trade.openRate }} </p>
       </div>
     </div>
 
@@ -55,8 +52,7 @@
           name: 'AlgoCurrencyTrade',
           params: {
             currency: currency,
-            buyTradeId: trade.buy.id,
-            sellTradeId: trade.sell.id
+            tradeId: trade.id,
           }
         }">
           <b-button variant="secondary">Analysis Trade</b-button>
@@ -69,7 +65,6 @@
 
 <script>
 import moment from 'moment';
-import pipCalculator from '@/services/pipCalculator';
 
 export default {
   props: {
@@ -78,18 +73,22 @@ export default {
 
   data() {
     return {
-
+      subView: 1
     }
   },
 
   computed: {
+    minsTradeWasOpen() {
+      const openDate = new Date(this.trade.openDate);
+      const closeDate = new Date(this.trade.closeDate);
+      const diffMs = (closeDate - openDate);
+
+      return Math.round(((diffMs % 86400000) % 3600000) / 60000); // minutes
+    },
+
     currency() {
       return this.$route.params.currency;
     },
-
-    pips() {
-      return pipCalculator(this.trade.buy.rate, this.trade.sell.rate);
-    }
   },
 
   methods: {

@@ -54,16 +54,7 @@ export default {
   },
 
   beforeMount() {
-    this.uploadWMA(SHORT_WMA_LENGTH)
-      .then(res => {
-        this.shortWMA = res.weightWMADataPoints[1].weightedMovingAverage;
-        this.prevShortWMA = res.weightWMADataPoints[0].weightedMovingAverage;
-      })
-    this.uploadWMA(LONG_WMA_LENGTH)
-      .then(res => {
-        this.longWMA = res.weightWMADataPoints[1].weightedMovingAverage;
-        this.prevLongWMA = res.weightWMADataPoints[0].weightedMovingAverage;
-      })
+  
   },
 
   methods: {

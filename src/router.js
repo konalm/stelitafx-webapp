@@ -6,7 +6,7 @@ import Currency from '@/components/Currency.vue';
 import Algos from '@/components/Algos.vue';
 import AlgoCurrency from '@/components/AlgoCurrency';
 import AlgoCurrencyTrade from '@/components/AlgoCurrencyTrade.vue';
-import Proto from '@/components/Proto.vue';
+import Proto from '@/components/Proto';
 Vue.use(Router);
 
 
@@ -33,7 +33,7 @@ export default new Router({
       component: AlgoCurrency
     },
     {
-      path: '/algo/:algoNo/currency/:currency/buy/:buyTradeId/sell/:sellTradeId',
+      path: '/algo/:algoNo/currency/:currency/trade/:tradeId',
       name: 'AlgoCurrencyTrade',
       component: AlgoCurrencyTrade
     },

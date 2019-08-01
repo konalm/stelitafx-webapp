@@ -52,3 +52,8 @@ export const buildBarGraph = (data, className) => {
   svg.append("g")
      .call(d3.axisLeft(y));
 }
+
+
+export const clearBarGraph = (className) => {
+  d3.select(`.bar-graph.${className}`).select("svg").remove();
+}
