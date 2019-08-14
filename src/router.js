@@ -3,7 +3,7 @@ import Router from 'vue-router';
 
 import Home from '@/components/Home.vue';
 import Currency from '@/components/Currency.vue';
-import Algos from '@/components/Algos.vue';
+import Protos from '@/components/Protos';
 import AlgoCurrency from '@/components/AlgoCurrency';
 import AlgoCurrencyTrade from '@/components/AlgoCurrencyTrade.vue';
 import Proto from '@/components/Proto';
@@ -25,7 +25,7 @@ export default new Router({
     {
       path: '/protos',
       name: 'Protos',
-      component: Algos
+      component: Protos
     },
     {
       path: '/algo/:algoNo/currency/:currency',

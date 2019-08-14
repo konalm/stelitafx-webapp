@@ -1,5 +1,9 @@
 <template>
-  <li class="list-group-item">
+  <li class="list-group-item" v-bind:class="{
+    'viewed': trade.viewed,
+    'in-view': inView}"
+    v-on:click="redirectToTrade()"
+  >
     <!-- header -->
     <div class="row">
       <div class="col header p-2">
@@ -11,7 +15,8 @@
         </p>
 
         <p>{{ minsTradeWasOpen }} mins</p>
-        <p>{{ formatDate(trade.closeDate) }}
+
+        <p v-if="!summary">{{ formatDate(trade.closeDate) }}
           {{ formatTime(trade.closeDate) }}
         </p>
       </div>
@@ -27,14 +32,14 @@
           </b>
         </p>
 
-        <p class="lead"> <i class="fas fa-arrow-down"></i>
+        <p class="lead" v-if="!summary"> <i class="fas fa-arrow-down"></i>
           {{ trade.closeRate }} </p>
       </div>
 
       <div class="mx-1"></div>
 
       <!-- open -->
-      <div class="col buy rounded py-2">
+      <div class="col buy rounded py-2" v-if="!summary">
         <p>
           <b>{{ formatDate(trade.openDate) }}
             <span class="ml-2">{{ formatTime(trade.openDate) }}</span>
@@ -42,23 +47,10 @@
         </p>
 
         <p class="lead"> <i class="fas fa-arrow-up"></i>
-          {{ trade.openRate }} </p>
+          {{ trade.openRate }}
+        </p>
       </div>
     </div>
-
-    <b-row class="mt-3">
-      <b-col class="text-center">
-        <router-link :to="{
-          name: 'AlgoCurrencyTrade',
-          params: {
-            currency: currency,
-            tradeId: trade.id,
-          }
-        }">
-          <b-button variant="secondary">Analysis Trade</b-button>
-        </router-link>
-      </b-col>
-    </b-row>
   </li>
 </template>
 
@@ -69,6 +61,16 @@ import moment from 'moment';
 export default {
   props: {
     trade: Object,
+    summary: {
+      type: Boolean,
+      required: false,
+      default: false
+    },
+    inView: {
+      type: Boolean,
+      required: false,
+      default: true
+    }
   },
 
   data() {
@@ -99,6 +101,32 @@ export default {
     formatTime(date) {
       return moment(date).format('HH:mm')
     },
+
+    redirectToTrade() {
+      this.$router.push({
+        name: 'AlgoCurrencyTrade',
+        params: {
+          current: this.currency,
+          tradeId: this.trade.id
+        }
+      })
+    }
   }
 }
 </script>
+
+
+<style lang="scss" scoped>
+.list-group-item {
+  cursor: pointer;
+
+  &.in-view {
+    box-shadow: 0 1px 5px rgba(0,0,0,0.3);
+  }
+
+}
+
+.viewed {
+  background: rgba(0,0,0,0.06);
+}
+</style>

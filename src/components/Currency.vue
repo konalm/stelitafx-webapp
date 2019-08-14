@@ -14,13 +14,14 @@
         class="mr-3 px-5"
       >
         <p class="lead">Prototype #{{ algo.prototype_no }}</p>
+
         <p class="mt-3">
           <router-link :to="{name: 'AlgoCurrency',
             params: {
               algoNo: algo.prototype_no,
               currency: abbrev
           }}">
-            <b-button variant="primary">View</b-button>
+            <b-button variant="primary w-100">View</b-button>
           </router-link>
         </p>
       </b-list-group-item>

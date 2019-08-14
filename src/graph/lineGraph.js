@@ -64,12 +64,42 @@ export const buildLineGraph = (data) => {
   // Add the X Axis
   svg.append("g")
       .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
+      .attr("class", "dates")
+      .call(
+        d3.axisBottom(x).ticks(20)
+      );
 
   // Add the Y Axis
   svg.append("g")
       .call(d3.axisLeft(y));
+
+
+  // add the X gridlines
+  svg.append("g")
+      .attr("class", "x-grid")
+      .attr("transform", "translate(0," + height + ")")
+      .call(make_x_gridlines(x)
+          .tickSize(-height)
+          .tickFormat("")
+      )
+
+  // add the Y gridlines
+  svg.append("g")
+      .attr("class", "grid")
+      .call(make_y_gridlines(y)
+          .tickSize(-width)
+          .tickFormat("")
+      )
 }
+
+// gridlines in x axis function
+const make_x_gridlines = (x) => {
+  return d3.axisBottom(x).ticks(50)
+}
+
+
+// gridlines in y axis function
+const make_y_gridlines = (y) => d3.axisLeft(y).ticks(20)
 
 /**
  *
@@ -102,4 +132,8 @@ const appendLineToGraph = (data, svg, valueLine, colour, width) => {
       .style('fill', 'none')
       .style('stroke', colour)
       .style('stroke-width', width);
+}
+
+export const clearLineGraph = () => {
+  d3.select(`.line-graph`).select("svg").remove()
 }

@@ -7,18 +7,11 @@
         <p>{{ dateCreated }}</p>
         <p>{{ proto.description }}</p>
 
-        <!-- date filter -->
-        <b-field class="mt-4">
-          <b-datepicker placeholder="Filter date..." icon="calendar-today"
-          v-model="filterDate"
-          />
-
-          <b-button class="ml-2" variant="danger" v-on:click="clearDate()">
-            <i class="fas fa-times"></i>
-          </b-button>
-        </b-field>
-
-        <b-button v-on:click="uploadTrades()">Update</b-button>
+        <b-row>
+          <b-col col lg="5">
+            <date-filter />
+          </b-col>
+        </b-row>
       </b-col>
 
       <b-col class="pl-5">
@@ -78,11 +71,14 @@ import { getHttpRequest } from '@/http/apiRequestV2';
 import { buildBarGraph, clearBarGraph } from '@/graph/barGraph';
 import ProtoCurrency from './children/ProtoCurrency.vue';
 import moment from 'moment';
+import DateFilter from '@/components/patterns/DateFilter.vue'
+import { mapActions } from 'vuex'
 
 export default {
   components: {
     AppTemplate,
-    ProtoCurrency
+    ProtoCurrency,
+    DateFilter
   },
 
   data() {
@@ -121,7 +117,7 @@ export default {
 
       this.allTrades.forEach((trade) => {
         const pip = trade.pips;
-        
+
         if (pip > 0) {
           profitTrades ++;
           totalPipsGained += pip;
@@ -215,6 +211,10 @@ export default {
   },
 
   methods: {
+    ...mapActions({
+      uploadTrades: 'trades/uploadProtoTrades'
+    }),
+
     uploadTrades() {
      this.$refs.currencyProto.forEach((cp) => {
        cp.uploadTradeOrders(this.filterDate);

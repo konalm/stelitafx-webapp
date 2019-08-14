@@ -1,16 +1,19 @@
 <template>
   <app-template>
     <b-row>
-      <b-col v-for="algo in algos" :key="algo.prototype_no">
-        <b-card>
-            <p class="lead">prototype #{{ algo.prototype_no }}</p>
-            <p><small>{{ algo.description }}</small></p>
-
-            <router-link :to="{name: 'Proto', params: {id: algo.prototype_no}}">
-              <b-button variant="primary" class="mt-4">View</b-button>
-            </router-link>
-        </b-card>
+      <b-col cols lg="3">
+        <date-filter />
       </b-col>
+    </b-row>
+
+    <b-row>
+      <b-col> <hr /> </b-col>
+    </b-row>
+
+    <b-row>
+      <proto-item v-for="proto in algos" :key="proto.prototype_no"
+        :proto="proto"
+      />
     </b-row>
   </app-template>
 </template>
@@ -19,16 +22,19 @@
 <script>
 import AppTemplate from '@/components/patterns/AppTemplate';
 import { algosHttpGetRequest } from '@/http/algos';
-
+import ProtoItem from './children/ProtoItem';
+import DateFilter from '@/components/patterns/DateFilter'
 
 export default {
   components: {
-    AppTemplate
+    AppTemplate,
+    ProtoItem,
+    DateFilter
   },
 
   data() {
     return {
-      algos: []
+      algos: [],
     }
   },
 
@@ -37,15 +43,12 @@ export default {
   },
 
   methods: {
-    /**
-     *
-     */
     async uploadAlgos() {
       algosHttpGetRequest()
         .then(res => {
           this.algos = res;
         })
-    }
-  }
+    },
+  },
 }
 </script>

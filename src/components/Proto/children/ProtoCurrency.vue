@@ -1,8 +1,14 @@
 <template>
-  <b-col>
+  <b-col class="px-5">
     {{ currency }}
-    {{ protoNo }}
-    <div class="bar-graph GBP-stats" v-bind:class="`${currency}-stats`"></div>
+    <div class="bar-graph" v-bind:class="`${currency}-stats`"></div>
+
+    <router-link :to="{name: 'AlgoCurrency', params: {
+      algoNo: protoNo,
+      currency
+    }}">
+      <b-button variant="primary" class="mt-2 w-100"> View </b-button>
+    </router-link>
   </b-col>
 </template>
 
@@ -12,6 +18,7 @@ import { getHttpRequest } from '@/http/apiRequestV2';
 import { buildBarGraph, clearBarGraph } from '@/graph/barGraph';
 import groupOrdersIntoTrades from '@/services/groupOrdersIntoTrades';
 import pipCalculator from '@/services/pipCalculator';
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   props: {
@@ -21,18 +28,27 @@ export default {
 
   data() {
     return {
-      trades: [],
     }
   },
 
   computed: {
+    ...mapGetters({
+      filterDate: 'dateFilter/filterDate'
+    }),
+
+    trades() {
+      return this.$store.getters['trade/protoCurrencyTrades'](
+        this.protoNo,
+        this.currency
+      )
+    },
+
     totalPips() {
       let gained = 0;
       let loss = 0;
       this.trades.forEach((trade) => {
-        const pip = pipCalculator(trade.openRate, trade.closeRate);
-        if (pip > 0) gained += pip
-        if (pip < 0) loss += pip * -1
+        if (trade.pips > 0) gained += trade.pips
+        if (trade.pips < 0) loss += trade.pips * -1
       });
 
       return {gained, loss};
@@ -49,44 +65,41 @@ export default {
           value: this.totalPips.loss
         }
       ];
-    },
+    }
   },
 
-  mounted() {
-    this.uploadTradeOrders();
+  beforeMount() {
+    this.uploadTrades({ protoNo: this.protoNo, baseCurrency: this.currency })
   },
+
 
   methods: {
+    ...mapActions({
+      uploadTrades: 'trade/uploadProtoCurrencyTrades'
+    }),
+
     profitTrades() {
-      return this.trades.filter((trade) =>
-        pipCalculator(trade.openRate, trade.closeRate) > 0
-      )
+      return this.trades.filter((trade) => trade.pips > 0)
     },
 
     lossTrades() {
-      return this.trades.filter((trade) =>
-        pipCalculator(trade.openRate, trade.closeRate) > 0
-      )
-    },
-
-    uploadTradeOrders(date = null) {
-      let url = `/proto/${this.protoNo}/currency/${this.currency}`;
-      if (date) url += `?date=${date.toISOString()}`
-
-      getHttpRequest(url)
-        .then(res => {
-          this.trades = res;
-          const payload = {currency: this.currency, trades: res};
-
-          this.$emit('uploadCurrencyTrades', payload);
-        })
-    },
+      return this.trades.filter((trade) => trade.pips < 0)
+    }
   },
 
   watch: {
     graphData(value) {
       clearBarGraph(`${this.currency}-stats`);
       buildBarGraph(value, `${this.currency}-stats`);
+    },
+
+    trades(value) {
+      const payload = {currency: this.currency, trades: value};
+      this.$emit('uploadCurrencyTrades', payload);
+    },
+
+    filterDate() {
+      this.uploadTrades({ protoNo: this.protoNo, baseCurrency: this.currency })
     }
   }
 }

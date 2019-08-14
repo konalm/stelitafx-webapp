@@ -26,6 +26,7 @@ import {
   currencyWMAHttpGetRequest
 } from '@/http/currencyRates';
 import { getHttpRequest } from '@/http/apiRequestV2';
+import { mapActions } from 'vuex';
 
 const currencyPreview = {
   date: '',
@@ -33,6 +34,7 @@ const currencyPreview = {
   twelveWMA: '',
   twentySixWMA: ''
 };
+
 
 export default {
   name: 'app',
@@ -48,7 +50,7 @@ export default {
       EURCurrency: currencyPreview,
       GBPCurrency: currencyPreview,
       JPYCurrency: currencyPreview,
-      majorCurrencyAbbrevs: []
+      majorCurrencyAbbrevs: [],
     }
   },
 
@@ -63,7 +65,7 @@ export default {
         .then(res => {
           this.majorCurrencyAbbrevs = res;
         })
-    }
+    },
   }
 }
 </script>

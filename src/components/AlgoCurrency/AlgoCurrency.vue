@@ -6,29 +6,7 @@
         <p class="lead">Prototype: {{ algoId }}</p>
         <p class="lead">Currency: <b>{{ baseCurrency }}/{{ quoteCurrency }}</b></p>
 
-        <!-- date filter -->
-        <b-field class="mt-4">
-          <b-datepicker placeholder="Filter date..." icon="calendar-today"
-          v-model="filterDate"
-          />
-
-          <b-button class="ml-2" variant="danger" v-on:click="clearDate()">
-            <i class="fas fa-times"></i>
-          </b-button>
-        </b-field>
-
-        <!-- time filter -->
-        <b-field class="mt-2">
-          <b-timepicker placeholder="Filter time..." icon="clock"
-          v-model="filterTime"
-          />
-
-          <b-button class="ml-2" variant="danger" v-on:click="clearTime()">
-            <i class="fas fa-times"></i>
-          </b-button>
-        </b-field>
-
-        <b-button v-on:click="uploadCurrencyTrades()">Update</b-button>
+        <date-filter />
       </b-col>
 
       <!-- stats -->
@@ -114,17 +92,20 @@ import {
 } from '@/http/currencyRates';
 import { getHttpRequest } from '@/http/apiRequestV2';
 import { buildLineGraph } from '@/graph/lineGraph';
-import { buildBarGraph } from '@/graph/barGraph';
+import { buildBarGraph, clearBarGraph } from '@/graph/barGraph';
 import formatDataForLineGraph from '@/services/formatDataForLineGraph';
 import groupOrdersIntoTrades from '@/services/groupOrdersIntoTrades';
 import Trade from './children/Trade';
+import DateFilter from '@/components/patterns/DateFilter';
+import { mapGetters, mapActions } from 'vuex';
 
 let FILTER_DATE_TIME = new Date();
 
 export default {
   components: {
     AppTemplate,
-    Trade
+    Trade,
+    DateFilter
   },
 
   data() {
@@ -133,22 +114,33 @@ export default {
       baseCurrency: '',
       quoteCurrency: 'USD',
       algoId: 0,
-      trades: [],
       tradesUploaded: false,
-      filterDate: null,
-      filterTime: null,
       subView: 1
     }
   },
 
   computed: {
+    ...mapGetters({
+      filterDate: 'dateFilter/filterDate'
+    }),
+
+    trades() {
+      return this.$store.getters['trade/protoCurrencyTrades'](
+        this.algoId,
+        this.baseCurrency
+      )
+    },
+
     totalTrades() {
       return this.trades.length;
     },
 
     totalPips() {
+      if (this.trades.length === 0) return {gained: 0, loss: 0}
+
       let gained = 0;
       let loss = 0;
+
       this.trades.forEach((trade) => {
         if (trade.pips > 0) gained += trade.pips
         if (trade.pips < 0) loss += trade.pips * -1
@@ -158,15 +150,11 @@ export default {
     },
 
     profitTrades() {
-      return this.trades.filter((trade) =>
-        trade.pips > 0
-      )
+      return this.trades.filter((trade) => trade.pips > 0)
     },
 
     lossTrades() {
-      return this.trades.filter((trade) =>
-        trade.pips < 0
-      )
+      return this.trades.filter((trade) => trade.pips < 0)
     },
 
     tradesBarGraphData() {
@@ -197,9 +185,9 @@ export default {
   },
 
   beforeMount() {
-    this.algoId = this.$route.params.algoNo;
-    this.baseCurrency = this.$route.params.currency;
-    this.uploadCurrencyTrades();
+    this.algoId = this.$route.params.algoNo
+    this.baseCurrency = this.$route.params.currency
+    this.uploadTrades({ protoNo: this.algoId, baseCurrency: this.baseCurrency })
   },
 
   mounted() {
@@ -207,6 +195,10 @@ export default {
   },
 
   methods: {
+    ...mapActions({
+      uploadTrades: 'trade/uploadProtoCurrencyTrades'
+    }),
+
     changeSubView(viewNo) {
       this.subView = viewNo;
     },
@@ -229,7 +221,7 @@ export default {
     calcMinsBetweenDates(dateAString, dateBString) {
       const dateA = new Date(dateAString);
       const dateB = new Date(dateBString);
-      const  diffMs = (dateA - dateB);
+      const diffMs = (dateA - dateB);
 
       return Math.round(((diffMs % 86400000) % 3600000) / 60000); // minutes
     },
@@ -309,26 +301,6 @@ export default {
     /**
      *
      */
-    uploadCurrencyTrades() {
-      /* only pass datetime filter if date filter has been populated */
-      const dateTimeFilter = this.filterDate ? FILTER_DATE_TIME : null;
-
-      const path = `/proto/${this.algoId}/currency/${this.baseCurrency}`
-      getHttpRequest(path)
-        .then(res => {
-          this.trades = res
-        })
-        .catch(() => {
-          throw new Error('Getting currency trades');
-        })
-        .finally(() => {
-          this.tradesUploaded = true;
-        })
-    },
-
-    /**
-     *
-     */
     tradeClass(transaction) {
       if (transaction === 'buy') return 'bg-primary'
 
@@ -338,50 +310,23 @@ export default {
 
 
   watch: {
+    filterDate() {
+      this.uploadTrades({ protoNo: this.algoId, baseCurrency: this.baseCurrency })
+    },
+
     subView(value) {
       if (value === 1) this.uploadWMAGraph()
     },
 
-    profitTradeAmount() {
-      buildBarGraph(this.tradesBarGraphData, 'trades');
-    },
-
     tradesBarGraphData() {
+      clearBarGraph('trades')
       buildBarGraph(this.tradesBarGraphData, 'trades')
     },
 
     avgPipsPerTradeGraph() {
+      clearBarGraph('avg-per-trade');
       buildBarGraph(this.avgPipsPerTradeGraph, 'avg-per-trade')
     },
-
-
-    /**
-     *
-     */
-    filterDate() {
-      const d = new Date(this.filterDate);
-
-      const year = d.getUTCFullYear();
-      const month = d.getMonth();
-      const day = d.getDate();
-
-      FILTER_DATE_TIME.setFullYear(year);
-      FILTER_DATE_TIME.setMonth(month);
-      FILTER_DATE_TIME.setDate(day);
-    },
-
-    /**
-     *
-     */
-    filterTime() {
-      const d = new Date(this.filterTime);
-
-      const hours = d.getHours();
-      const mins = d.getMinutes();
-
-      FILTER_DATE_TIME.setHours(hours);
-      FILTER_DATE_TIME.setMinutes(mins)
-    }
   }
 }
 </script>

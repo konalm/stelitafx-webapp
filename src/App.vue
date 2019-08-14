@@ -19,11 +19,28 @@ export default {
   color: #2c3e50;
 }
 
-.Gain, .Profit {
+.Gain, .Profit, .gained {
   fill: #28a745;
 }
 
-.Loss {
+.Loss, .lost {
   fill: #dc3545;
 }
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 2px;
+}
+
+.grid line, .x-grid line {
+  stroke: lightgrey;
+  stroke-opacity: 0.7;
+  shape-rendering: crispEdges;
+}
+
+.x-grid path,  {
+  stroke-width: 0;
+}
+
 </style>
