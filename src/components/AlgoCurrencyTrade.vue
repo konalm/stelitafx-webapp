@@ -234,7 +234,7 @@ export default {
 
       const protoNo = parseInt(this.protoNo);
 
-      if (protoNo === 1 || protoNo === 2 || protoNo === 3) {
+      if (protoNo === 1 || protoNo === 2 || protoNo === 3 || protoNo === 7) {
         details = details.concat(this.wmaDetailsForProtoOneAndTwo)
       }
 

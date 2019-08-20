@@ -6,7 +6,13 @@
 
       <div v-bind:id="'pieGraph' + proto.prototype_no" class="my-3 text-center"></div>
 
-      <p class="lead text-center text-success">{{ gainedPercent }} %</p>
+      <p class="text-center">
+        Gained: {{ pips.gained }} | Lost: {{ pips.lost }}
+      </p>
+
+      <p class="lead text-center mt-3" v-bind:class="{'text-success': gainedPercent >= 70}">
+        {{ gainedPercent }} %
+      </p>
 
       <router-link :to="{name: 'Proto', params: {id: proto.prototype_no}}" class="2-10">
         <b-button variant="primary" class="mt-2 w-100">View</b-button>

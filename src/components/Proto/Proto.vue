@@ -59,6 +59,13 @@
           <p>Overall performance</p>
           <div class="bar-graph overall-performance"></div>
         </b-col>
+
+        <b-col class="sm">
+          <p>Gained: {{ tradeStats.totalPipsGained }} </p>
+          <p>Lost: {{ tradeStats.totalPipsLoss }} </p>
+          <div v-bind:id="'pieGraph' + protoNo" class="my-3 text-center"></div>
+
+        </b-col>
       </b-row>
     </b-card>
   </app-template>
@@ -69,6 +76,7 @@
 import AppTemplate from '@/components/patterns/AppTemplate';
 import { getHttpRequest } from '@/http/apiRequestV2';
 import { buildBarGraph, clearBarGraph } from '@/graph/barGraph';
+import { buildPieGraph, clearPieGraph } from '@/graph/pieGraph';
 import ProtoCurrency from './children/ProtoCurrency.vue';
 import moment from 'moment';
 import DateFilter from '@/components/patterns/DateFilter.vue'
@@ -100,6 +108,10 @@ export default {
   },
 
   computed: {
+    protoNo() {
+      return this.$route.params.id
+    },
+
     allTrades() {
       let trades = [];
       for (let [key, value] of Object.entries(this.trades)) {
@@ -264,6 +276,11 @@ export default {
     overallTradePerformanceData(value) {
       clearBarGraph('overall-performance')
       buildBarGraph(value, 'overall-performance')
+    },
+
+    tradeStats(value) {
+      clearPieGraph(this.protoNo)
+      buildPieGraph(this.protoNo, value.totalPipsGained, value.totalPipsLoss)
     }
   }
 }
