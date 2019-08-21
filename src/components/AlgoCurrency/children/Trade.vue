@@ -14,7 +14,7 @@
           <b>{{ trade.pips }}</b>
         </p>
 
-        <p>{{ minsTradeWasOpen }} mins</p>
+        <p>{{ duration }}</p>
 
         <p v-if="!summary">{{ formatDate(trade.closeDate) }}
           {{ formatTime(trade.closeDate) }}
@@ -56,7 +56,8 @@
 
 
 <script>
-import moment from 'moment';
+import moment from 'moment'
+import { durationOfTrade } from '@/services/utils'
 
 export default {
   props: {
@@ -80,12 +81,8 @@ export default {
   },
 
   computed: {
-    minsTradeWasOpen() {
-      const openDate = new Date(this.trade.openDate);
-      const closeDate = new Date(this.trade.closeDate);
-      const diffMs = (closeDate - openDate);
-
-      return Math.round(((diffMs % 86400000) % 3600000) / 60000); // minutes
+    duration() {
+      return durationOfTrade(this.trade.openDate, this.trade.closeDate)
     },
 
     currency() {
@@ -110,7 +107,7 @@ export default {
           tradeId: this.trade.id
         }
       })
-    }
+    },
   }
 }
 </script>

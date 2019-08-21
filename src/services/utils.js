@@ -36,3 +36,18 @@ export const calcPercentangeOfGain = (gained, lost) => {
 
   return division * 100;
 }
+
+export const durationOfTrade = (openDateString, closeDateString) => {
+  const openDate = new Date(openDateString)
+  const closeDate = new Date(closeDateString)
+  var diffMs = (closeDate - openDate);
+
+  const hours = (Math.abs(closeDate - openDate) / 36e5).toFixed(0)
+  const mins =  Math.round(((diffMs % 86400000) % 3600000) / 60000);
+
+  let duration = '';
+  if (hours > 0) duration += `${hours} H  `
+  duration += `${mins} M`
+
+  return duration
+}

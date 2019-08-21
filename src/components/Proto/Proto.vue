@@ -64,7 +64,6 @@
           <p>Gained: {{ tradeStats.totalPipsGained }} </p>
           <p>Lost: {{ tradeStats.totalPipsLoss }} </p>
           <div v-bind:id="'pieGraph' + protoNo" class="my-3 text-center"></div>
-
         </b-col>
       </b-row>
     </b-card>

@@ -64,8 +64,16 @@
               {{ trade.pips }}
             </p>
 
-          <p> Duration: {{ minsBetween }} mins </p>
+          <p> Duration: {{ duration }} </p>
         </b-card>
+      </b-col>
+    </b-row>
+
+    <b-row>
+      <b-col>
+        <p class="lead">Lowest from open: {{ lowestPipFromOpenTrade }}</p>
+        <p class="lead">Highest from open: {{ highestPipFromOpen }}</p>
+
       </b-col>
     </b-row>
 
@@ -120,7 +128,7 @@ import moment from 'moment';
 import AppTemplate from '@/components/patterns/AppTemplate';
 import { getHttpRequest } from '@/http/apiRequestV2';
 import { buildLineGraph, clearLineGraph } from '@/graph/lineGraph';
-import { compareHourAndMin } from '@/services/utils';
+import { compareHourAndMin, durationOfTrade } from '@/services/utils';
 import pipCalculator from '@/services/pipCalculator';
 import DateFilter from '@/components/patterns/DateFilter';
 import Trade from '@/components/AlgoCurrency/children/Trade';
@@ -180,14 +188,10 @@ export default {
     },
 
     /**
-     * minutes between the buy and sell order
+     * duration between the buy and sell order
      */
-    minsBetween() {
-      const buyDate = new Date(this.trade.openDate);
-      const sellDate = new Date(this.trade.closeDate);
-      var diffMs = (sellDate - buyDate);
-
-      return Math.round(((diffMs % 86400000) % 3600000) / 60000); // minutes
+    duration() {
+      return durationOfTrade(this.trade.openDate, this.trade.closeDate)
     },
 
     protoNo() {
@@ -238,6 +242,9 @@ export default {
         details = details.concat(this.wmaDetailsForProtoOneAndTwo)
       }
 
+      if (protoNo === 5) details = details.concat(this.wmaDetails5And15)
+      if (protoNo === 4 || protoNo === 6) details = details.concat(this.wmaDetails5And12)
+
       return { dataPoints, details };
     },
 
@@ -257,6 +264,36 @@ export default {
           width: 1
         }
       ];
+    },
+
+    wmaDetails5And15() {
+      return [
+        {
+          key: 'fiveWMA',
+          colour: 'blue',
+          width: 1
+        },
+        {
+          key: 'fifteenWMA',
+          colour: 'red',
+          width: 1
+        }
+      ]
+    },
+
+    wmaDetails5And12() {
+      return [
+        {
+          key: 'fiveWMA',
+          colour: 'blue',
+          width: 1
+        },
+        {
+          key: 'twelveWMA',
+          colour: 'red',
+          width: 1
+        }
+      ]
     },
 
     pipMovement() {
@@ -305,7 +342,32 @@ export default {
       const tradeCloseShortWMA = this.wmaData[this.tradeCloseIndex].WMAs['12'];
 
       return pipCalculator(rate, tradeCloseShortWMA, `${this.currency}/USD`) * -1
-    }
+    },
+
+    pipsFromOpenTrade() {
+      const wmaData = [...this.wmaData];
+      const betweenTradesLength = this.tradeCloseIndex - this.tradeOpenIndex;
+      const wmaDataBetweenTrades =
+        wmaData.splice(this.tradeOpenIndex, betweenTradesLength);
+
+      console.log(wmaDataBetweenTrades.length)
+
+      const pipsFromOpenTrade = [];
+      wmaDataBetweenTrades.forEach((dataPoint) => {
+        const pip = pipCalculator(this.trade.openRate, dataPoint.rate);
+        pipsFromOpenTrade.push(pip);
+      });
+
+      return pipsFromOpenTrade
+    },
+
+    lowestPipFromOpenTrade() {
+      return Math.min(...this.pipsFromOpenTrade)
+    },
+
+    highestPipFromOpen() {
+      return Math.max(...this.pipsFromOpenTrade)
+    },
   },
 
   methods: {
