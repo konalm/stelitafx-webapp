@@ -7,6 +7,8 @@ import Protos from '@/components/Protos';
 import AlgoCurrency from '@/components/AlgoCurrency';
 import AlgoCurrencyTrade from '@/components/AlgoCurrencyTrade.vue';
 import Proto from '@/components/Proto';
+import Monitor from '@/components/Monitor'
+
 Vue.use(Router);
 
 
@@ -41,6 +43,11 @@ export default new Router({
       path: '/proto/:id',
       name: 'Proto',
       component: Proto
+    },
+    {
+      path: '/monitor',
+      name: 'Monitor',
+      component: Monitor
     }
   ],
 

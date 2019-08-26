@@ -3,16 +3,17 @@ const parseTime = d3.timeParse('%Y-%m-%d %H:%M');
 
 // set the dimensions and margins of the graph
 const margin = {top: 20, right: 20, bottom: 30, left: 50};
-const width = 1300 - margin.left - margin.right;
-const height = 500 - margin.top - margin.bottom;
 
 
 /**
  *
  */
-export const buildLineGraph = (data) => {
+export const buildLineGraph = (data, domClassName, _width, _height) => {
+  const width = _width - margin.left - margin.right;
+  const height = _height - margin.top - margin.bottom;
+
   const dataPoints = data.dataPoints;
-  const svg = buildSvg();
+  const svg = buildSvg(domClassName, width, height);
 
   // set the ranges
   const x = d3.scaleTime().range([0, width]);
@@ -104,8 +105,8 @@ const make_y_gridlines = (y) => d3.axisLeft(y).ticks(20)
 /**
  *
  */
-const buildSvg = () =>
-  d3.select(".line-graph")
+const buildSvg = (domClassName, width, height) =>
+  d3.select(`.${domClassName}`)
     .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
@@ -134,6 +135,6 @@ const appendLineToGraph = (data, svg, valueLine, colour, width) => {
       .style('stroke-width', width);
 }
 
-export const clearLineGraph = () => {
-  d3.select(`.line-graph`).select("svg").remove()
+export const clearLineGraph = (domClassName) => {
+  d3.select(`.${domClassName}`).select("svg").remove()
 }

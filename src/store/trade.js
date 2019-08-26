@@ -18,7 +18,11 @@ const tradeStore = {
       protoNo4: protoAlgoTrades,
       protoNo5: protoAlgoTrades,
       protoNo6: protoAlgoTrades,
-      protoNo7: protoAlgoTrades
+      protoNo7: protoAlgoTrades,
+      protoNo71: protoAlgoTrades,
+      protoNo72: protoAlgoTrades,
+      protoNo73: protoAlgoTrades,
+      protoNo74: protoAlgoTrades
     }
   },
 

@@ -16,6 +16,10 @@
           <b-nav-item>
             <router-link :to="{name: 'Home'}"> Currencies </router-link>
           </b-nav-item>
+
+          <b-nav-item>
+            <router-link :to="{name: 'Monitor'}"> Monitor </router-link>
+          </b-nav-item>
         </b-navbar-nav>
       </b-collapse>
     </b-navbar>
@@ -30,13 +34,7 @@
 <script>
 export default {
   data() {
-    return {
-
-    }
+    return {}
   },
-
-  methods: {
-
-  }
 }
 </script>

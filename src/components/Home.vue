@@ -37,7 +37,7 @@ const currencyPreview = {
 
 
 export default {
-  name: 'app',
+  name: 'home',
 
   components: {
     AppTemplate
