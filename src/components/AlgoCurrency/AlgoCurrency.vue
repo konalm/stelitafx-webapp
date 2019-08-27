@@ -206,7 +206,7 @@ export default {
     uploadCurrenciesRates() {
       currenciesRatesHttpGetRequest(this.baseCurrency, 100)
         .then(res => {
-          buildLineGraph(ratesForLineGraph);
+          buildLineGraph(ratesForLineGraph, 'line-graph', 1300, 500);
         });
     },
 
@@ -255,7 +255,7 @@ export default {
 
       const lineGraphData = this.dataFormatForLineGraph(wmaDataPoints);
 
-      buildLineGraph(lineGraphData)
+      buildLineGraph(lineGraphData, 'line-graph', 1300, 500)
     },
 
     /**

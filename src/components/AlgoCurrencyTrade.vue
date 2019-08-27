@@ -81,7 +81,7 @@
     <b-row class="mt-5">
       <b-col>
         <div class="pip-movement__container">
-          <div class="item" v-for="pip in pipMovement">
+          <div class="item" v-for="(pip, index) in pipMovement" :key="index">
             {{ pip.pip }}
           </div>
         </div>
@@ -449,8 +449,8 @@ export default {
     },
 
     formattedDataForLineGraph(value) {
-      clearLineGraph()
-      buildLineGraph(value);
+      clearLineGraph('line-graph')
+      buildLineGraph(value, 'line-graph', 1310, 500);
     },
 
     tradeOpenIndex(value) {
