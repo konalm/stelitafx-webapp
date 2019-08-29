@@ -88,6 +88,13 @@
       </b-col>
     </b-row>
 
+    <!-- open trade stats -->
+    <b-row class="mt-5">
+      <b-col>
+        {{ trade.openStats }}
+      </b-col>
+    </b-row>
+
     <!-- Line Graph -->
     <b-row>
       <b-col>
@@ -238,11 +245,20 @@ export default {
 
       const protoNo = parseInt(this.protoNo);
 
-      if (protoNo === 1 || protoNo === 2 || protoNo === 3 || protoNo === 7) {
+      if (
+        protoNo === 1 || 
+        protoNo === 2 || 
+        protoNo === 3 || 
+        protoNo === 7 ||
+        protoNo === 71 ||
+        protoNo === 72 ||
+        protoNo === 73 ||
+        protoNo === 74
+      ) {
         details = details.concat(this.wmaDetailsForProtoOneAndTwo)
       }
 
-      if (protoNo === 5) details = details.concat(this.wmaDetails5And15)
+      if (protoNo === 5 || protoNo === 51) details = details.concat(this.wmaDetails5And15)
       if (protoNo === 4 || protoNo === 6) details = details.concat(this.wmaDetails5And12)
 
       return { dataPoints, details };
@@ -432,7 +448,6 @@ export default {
           this.trade = res;
         });
     },
-
 
     formatDate(date) {
       return moment(date).format('DD/MM/YYYY')
