@@ -217,6 +217,10 @@ export default {
      *
      */
     formattedDataForLineGraph() {
+      console.log('format data for line graph ')
+      console.log(this.wmaData)
+      console.log('< ---------')
+
       const dataPoints = this.wmaData.map((dataPoint) => ({
         date: dataPoint.date,
         rate: dataPoint.rate,
@@ -225,7 +229,8 @@ export default {
         fiveWMA: dataPoint.WMAs["5"],
         twelveWMA: dataPoint.WMAs["12"],
         fifteenWMA: dataPoint.WMAs["15"],
-        thirtySixWMA: dataPoint.WMAs["36"]
+        thirtySixWMA: dataPoint.WMAs["36"],
+        twoHundredWMA: dataPoints.WMAs["200"]
       }));
       let details = [
         {
@@ -308,6 +313,16 @@ export default {
           key: 'twelveWMA',
           colour: 'red',
           width: 1
+        }
+      ]
+    },
+
+    wmaDetails200() {
+      return [
+        {
+          key: 'twoHundredWMA',
+          colour: 'green',
+          width: 200
         }
       ]
     },
