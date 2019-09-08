@@ -1,6 +1,7 @@
 <template>
   <b-col class="px-5">
     {{ currency }}
+
     <div class="bar-graph" v-bind:class="`${currency}-stats`"></div>
 
     <router-link :to="{name: 'AlgoCurrency', params: {
@@ -23,26 +24,22 @@ import { mapGetters, mapActions } from 'vuex';
 export default {
   props: {
     protoNo: 0,
-    currency: '',
-  },
-
-  data() {
-    return {
+    currency: {
+      type: String,
+      required: true,
+      default: ''
+    },
+    timeInterval: 1,
+    trades: {
+      type: Array,
+      required: true,
+      default: []
     }
   },
 
+  data() { return {} },
+
   computed: {
-    ...mapGetters({
-      filterDate: 'dateFilter/filterDate'
-    }),
-
-    trades() {
-      return this.$store.getters['trade/protoCurrencyTrades'](
-        this.protoNo,
-        this.currency
-      )
-    },
-
     totalPips() {
       let gained = 0;
       let loss = 0;
@@ -68,16 +65,7 @@ export default {
     }
   },
 
-  beforeMount() {
-    this.uploadTrades({ protoNo: this.protoNo, baseCurrency: this.currency })
-  },
-
-
   methods: {
-    ...mapActions({
-      uploadTrades: 'trade/uploadProtoCurrencyTrades'
-    }),
-
     profitTrades() {
       return this.trades.filter((trade) => trade.pips > 0)
     },

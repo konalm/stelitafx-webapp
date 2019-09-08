@@ -36,6 +36,11 @@ export default {
         prototype_no: 0,
         description: ''
       }
+    },
+    timeInterval: {
+      type: Number,
+      required: false,
+      default: 1
     }
   },
 
@@ -55,13 +60,13 @@ export default {
     }),
 
     pips() {
-      if (this.trades.length === 0) return { gained: 0, lost: 0 }
+      if (!this.trades || this.trades.length === 0) return { gained: 0, lost: 0 }
 
       let gained = 0
       let lost = 0
       this.trades.forEach((trade) => {
-        if (trade.pip > 0) gained += trade.pip
-        if (trade.pip < 0) lost += trade.pip * -1
+        if (trade.pips > 0) gained += trade.pips
+        if (trade.pips < 0) lost += trade.pips * -1
       })
 
       return { gained, lost }
@@ -77,7 +82,10 @@ export default {
       try {
         this.trades = await this.$store.dispatch(
           'trade/uploadProtoTrades',
-          this.proto.prototype_no
+          {
+            protoNo: this.proto.prototype_no,
+            interval: this.timeInterval
+          }
         )
       } catch (err) {
         throw new Error(`Failed to upload trades for proto ${this.proto.prototype_no}`)
@@ -93,6 +101,10 @@ export default {
 
     dateFilter() {
       console.log('proto item, watch filter date ???')
+      this.uploadTrades()
+    },
+
+    timeInterval() {
       this.uploadTrades()
     }
   }

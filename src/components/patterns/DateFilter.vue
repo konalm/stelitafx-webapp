@@ -1,6 +1,6 @@
 <template>
   <section>
-    <b-form-select class="mt-3" v-model="filter" :options="options" required />
+    <b-form-select v-model="filter" :options="options" required />
   </section>
 </template>
 

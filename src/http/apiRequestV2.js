@@ -6,7 +6,7 @@ const config = require('../config/index')
  */
 const httpInstance = axios.create({
   baseURL: `${config.apiUrl}/`,
-  timeout: 1000,
+  // timeout: 10000,
 })
 
 
@@ -19,8 +19,13 @@ export const getHttpRequest = async (path) => {
   try {
     response = await httpInstance.get(path);
   } catch (err) {
+    console.log('CATCH !!!')
+    console.log(err)
     throw new Error(`http get request to api for path >> ${path} \n ${err}`);
   }
+
+  console.log('response -->')
+  console.log(response)
 
   return response.data
 }

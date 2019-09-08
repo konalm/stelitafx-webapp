@@ -6,7 +6,8 @@
         <p class="lead">Prototype: {{ algoId }}</p>
         <p class="lead">Currency: <b>{{ baseCurrency }}/{{ quoteCurrency }}</b></p>
 
-        <date-filter />
+        <date-filter class="mt-2" /> 
+        <time-interval class="mt-4" />
       </b-col>
 
       <!-- stats -->
@@ -98,6 +99,7 @@ import groupOrdersIntoTrades from '@/services/groupOrdersIntoTrades';
 import Trade from './children/Trade';
 import DateFilter from '@/components/patterns/DateFilter';
 import { mapGetters, mapActions } from 'vuex';
+import TimeInterval from '@/components/patterns/TimeInterval';
 
 let FILTER_DATE_TIME = new Date();
 
@@ -105,7 +107,8 @@ export default {
   components: {
     AppTemplate,
     Trade,
-    DateFilter
+    DateFilter,
+    TimeInterval
   },
 
   data() {
@@ -196,7 +199,7 @@ export default {
 
   methods: {
     ...mapActions({
-      uploadTrades: 'trade/uploadProtoCurrencyTrades'
+      uploadTrades: 'trade/uploadProtoIntervalCurrencyTrades'
     }),
 
     changeSubView(viewNo) {
@@ -243,12 +246,12 @@ export default {
      *
      */
     async uploadWMAGraph() {
+      const interval = this.$store.getters['timeInterval/interval']
+      const path = `/currency/${this.baseCurrency}/int/${interval}/wma-data-points/40`
+      
       let wmaDataPoints;
       try {
-        wmaDataPoints = await currenciesWMADataPointsHttpGetRequest(
-                                this.baseCurrency,
-                                40
-                              );
+        wmaDataPoints = await getHttpRequest(path);
       } catch (err) {
         throw new Error(err);
       }

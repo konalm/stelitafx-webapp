@@ -7,9 +7,13 @@
         <p>{{ dateCreated }}</p>
         <p>{{ proto.description }}</p>
 
-        <b-row>
+        <b-row class="mt-3 mb-2">
           <b-col col lg="5">
             <date-filter />
+          </b-col>
+
+          <b-col col lg="5">
+            <b-form-select v-model="timeInterval" :options="timeIntervalOptions" />
           </b-col>
         </b-row>
       </b-col>
@@ -18,12 +22,14 @@
         <b-card>
           <p>Total trades {{ amountOfTrades }}</p>
 
-          <p class="small">
-            GBP {{ this.trades.GBP.length }}
-            <span class="ml-2">EUR {{ this.trades.EUR.length }}</span>
-            <span class="ml-2">JPY {{ this.trades.JPY.length }}</span>
-            <span class="ml-2">AUD {{ this.trades.AUD.length }}</span>
-          </p>
+          <!-- <p class="small"> -->
+            <ul class="flex">
+              <li class="ml-2" v-for="currency in currencies" :key="currency">
+                <span class="small">
+                  {{ currency }} {{ currencyTrades[currency].length }}
+                </span>
+              </li>
+            </ul>
 
           <p>Avg trades per day {{ averageTradesPerDay }}</p>
         </b-card>
@@ -33,11 +39,9 @@
     <!-- currencies -->
     <b-card class="mt-4">
       <b-row v-if="proto.prototypeNo">
-        <proto-currency v-for="currency in currencies"
-          :protoNo="proto.prototypeNo"
+        <proto-currency v-for="currency in currencies" :key="currency"
+          :trades="currencyTrades[currency]"
           :currency="currency"
-          v-on:uploadCurrencyTrades="uploadCurrencyTradesEvent"
-          ref="currencyProto"
         />
       </b-row>
     </b-card>
@@ -95,29 +99,41 @@ export default {
         dateCreated: '',
         description: '',
       },
-      currencies: ['GBP', 'EUR', 'JPY', 'AUD'],
-      trades: {
-        GBP: [],
-        EUR: [],
-        JPY: [],
-        AUD: [],
-      },
+      trades: [],
       filterDate: null,
+      timeInterval: 1
     }
   },
 
   computed: {
-    protoNo() {
-      return this.$route.params.id
+    currencyTrades() {
+      const currencyTrades = {
+        GBP: [],
+        EUR: [],
+        JPY: [],
+        AUD: []
+      };
+      const currencies = Object.keys(currencyTrades);
+
+      currencies.forEach((currency) => {
+        currencyTrades[currency] = this.trades.filter((trade) => 
+          trade.abbrev === `${currency}/USD`
+        )
+      })
+
+      return currencyTrades
     },
 
-    allTrades() {
-      let trades = [];
-      for (let [key, value] of Object.entries(this.trades)) {
-        trades = trades.concat(this.trades[key]);
-      }
+    currencies() {
+      return Object.keys(this.currencyTrades)
+    },
 
-      return trades;
+    timeIntervalOptions() {
+      return this.$store.getters['timeInterval/selectOptions']
+    },
+
+    protoNo() {
+      return this.$route.params.id
     },
 
     tradeStats() {
@@ -126,7 +142,7 @@ export default {
       let totalPipsGained = 0;
       let totalPipsLoss = 0;
 
-      this.allTrades.forEach((trade) => {
+      this.trades.forEach((trade) => {
         const pip = trade.pips;
 
         if (pip > 0) {
@@ -149,8 +165,6 @@ export default {
         avgPipsLossPerTrade: totalPipsLoss / lossTrades
       };
     },
-
-
 
     allTradesGraphData() {
       return [
@@ -192,7 +206,9 @@ export default {
     },
 
     amountOfTrades() {
-      if (this.trades.length === 0) return;
+      return this.trades.length
+
+      if (!this.trades || this.trades.length === 0) return;
 
       let totalTrades = 0;
       for (let [key, value] of Object.entries(this.trades)) {
@@ -218,7 +234,12 @@ export default {
   },
 
   beforeMount() {
-    this.uploadProto();
+    this.uploadProto()
+    this.uploadTrades()
+
+    if (!this.timeIntervalOptions.length) {
+      this.$store.dispatch('timeInterval/uploadTimeIntervals')
+    }
   },
 
   methods: {
@@ -226,15 +247,24 @@ export default {
       uploadTrades: 'trades/uploadProtoTrades'
     }),
 
+    objectKey(object) {
+      return Object.keys(object)
+    },
+
     uploadTrades() {
-     this.$refs.currencyProto.forEach((cp) => {
-       cp.uploadTradeOrders(this.filterDate);
-     });
+      let path = `/protos/${this.protoNo}/intervals/${this.timeInterval}/trades`
+      
+      const dateFilter = this.$store.getters['dateFilter/filterDate'];
+      if (dateFilter) path += `?date=${dateFilter}`
+
+      getHttpRequest(path)
+        .then(res => {
+          this.trades = res
+        })
     },
 
     uploadProto() {
       const path = `protos/${this.$route.params.id}`
-
       getHttpRequest(path)
         .then(res => {
           this.proto = res;
@@ -262,6 +292,10 @@ export default {
   },
 
   watch: {
+    timeInterval() {
+      this.uploadTrades()
+    },
+
     allTradesGraphData(value) {
       clearBarGraph('trades');
       buildBarGraph(value, 'trades')

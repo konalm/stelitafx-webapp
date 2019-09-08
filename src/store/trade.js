@@ -35,10 +35,11 @@ const tradeStore = {
   },
 
   actions: {
-    async uploadProtoTrades({ commit, rootGetters }, protoNo) {
+    async uploadProtoTrades({ commit, rootGetters }, data) {
       const dateFilter = rootGetters['dateFilter/filterDate'];
 
-      let path = `/proto/${protoNo}/trades`
+      let path = `/protos/${data.protoNo}/intervals/${data.interval}/trades`
+      console.log(path)
       if (dateFilter) path += `?date=${dateFilter}`
 
       let trades = []
@@ -51,10 +52,11 @@ const tradeStore = {
       return trades
     },
 
-    uploadProtoCurrencyTrades({ commit, rootGetters }, data) {
+    uploadProtoIntervalCurrencyTrades({ commit, rootGetters }, data) {
       const dateFilter = rootGetters['dateFilter/filterDate'];
+      const interval = rootGetters['timeInterval/interval'];
 
-      let path = `/proto/${data.protoNo}/currency/${data.baseCurrency}`;
+      let path = `/proto/${data.protoNo}/intervals/${interval}/currency/${data.baseCurrency}`;
       if (dateFilter) path += `?date=${dateFilter}`
 
       getHttpRequest(path)
