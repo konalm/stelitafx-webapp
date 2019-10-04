@@ -4,8 +4,9 @@
 
     <div class="bar-graph" v-bind:class="`${currency}-stats`"></div>
 
-    <router-link :to="{name: 'AlgoCurrency', params: {
-      algoNo: protoNo,
+    <router-link :to="{name: 'PrototypeCurrencyAnalysis', params: {
+      no: protoNo,
+      interval: timeInterval,
       currency
     }}">
       <b-button variant="primary" class="mt-2 w-100"> View </b-button>
@@ -23,13 +24,19 @@ import { mapGetters, mapActions } from 'vuex';
 
 export default {
   props: {
-    protoNo: 0,
+    protoNo: {
+      type: Number,
+      required: true
+    },
     currency: {
       type: String,
       required: true,
       default: ''
     },
-    timeInterval: 1,
+    timeInterval: {
+      type: Number,
+      required: true,
+    },
     trades: {
       type: Array,
       required: true,

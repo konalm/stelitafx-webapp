@@ -1,7 +1,9 @@
 <template>
   <app-template>
-    <b-row class="mt-5">
-      <b-col class="text-center" v-for="currency in majorCurrencyAbbrevs">
+    <b-row class="mt-5 currency__container">
+      <b-col class="text-center" v-for="currency in majorCurrencyAbbrevs" 
+        :key="currency.pairAbbrev"
+      >
         <b-card v-bind:title="currency.pairAbbrev">
           <div class="row mt-4">
             <div class="col">
@@ -69,3 +71,4 @@ export default {
   }
 }
 </script>
+

@@ -6,10 +6,21 @@
 
 <script>
 export default {
+  props: {
+    value: {
+      type: Number,
+      required: true,
+      default: 1
+    }
+  },
+
   data() { return {} },
 
   beforeMount() {
-    this.$store.dispatch('timeInterval/uploadTimeIntervals')
+    // if (this.$router.query.interval) this.interval = this.$router.query.interval
+
+    if (!this.options.length) this.$store.dispatch('timeInterval/uploadTimeIntervals')
+
   },
 
   computed: {
@@ -19,13 +30,25 @@ export default {
 
     interval: {
       get() {
-        return this.$store.getters['timeInterval/interval']
+        return this.value
       },
-      set(newValue) {
-        this.$store.dispatch('timeInterval/updateInterval', newValue)
+
+      set(value) {
+        this.$emit('input', value)
       }
-    }
+    },
   },
+
+  watch: {
+    // interval(value) {
+    //   this.$router.push({query: {interval: value}})
+    //   this.$emit('input', value)
+    // },
+
+    // value(value) {
+    //   this.$emit('input', value)
+    // }
+  }
 }
 </script>
 

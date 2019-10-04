@@ -13,7 +13,7 @@
           </b-col>
 
           <b-col col lg="5">
-            <b-form-select v-model="timeInterval" :options="timeIntervalOptions" />
+            <time-interval v-model="timeInterval" />
           </b-col>
         </b-row>
       </b-col>
@@ -23,13 +23,13 @@
           <p>Total trades {{ amountOfTrades }}</p>
 
           <!-- <p class="small"> -->
-            <ul class="flex">
-              <li class="ml-2" v-for="currency in currencies" :key="currency">
-                <span class="small">
-                  {{ currency }} {{ currencyTrades[currency].length }}
-                </span>
-              </li>
-            </ul>
+          <ul class="flex">
+            <li class="ml-2" v-for="currency in currencies" :key="currency">
+              <span class="small">
+                {{ currency }} {{ currencyTrades[currency].length }}
+              </span>
+            </li>
+          </ul>
 
           <p>Avg trades per day {{ averageTradesPerDay }}</p>
         </b-card>
@@ -40,8 +40,10 @@
     <b-card class="mt-4">
       <b-row v-if="proto.prototypeNo">
         <proto-currency v-for="currency in currencies" :key="currency"
-          :trades="currencyTrades[currency]"
+          :protoNo="protoNo"
           :currency="currency"
+          :trades="currencyTrades[currency]"
+          :timeInterval="timeInterval"
         />
       </b-row>
     </b-card>
@@ -71,6 +73,8 @@
         </b-col>
       </b-row>
     </b-card>
+
+    <b-spinner variant="primary" label="Spinning" v-if="loading" />
   </app-template>
 </template>
 
@@ -80,16 +84,18 @@ import AppTemplate from '@/components/patterns/AppTemplate';
 import { getHttpRequest } from '@/http/apiRequestV2';
 import { buildBarGraph, clearBarGraph } from '@/graph/barGraph';
 import { buildPieGraph, clearPieGraph } from '@/graph/pieGraph';
-import ProtoCurrency from './children/ProtoCurrency.vue';
+import ProtoCurrency from './children/ProtoCurrencyItem.vue';
 import moment from 'moment';
 import DateFilter from '@/components/patterns/DateFilter.vue'
-import { mapActions } from 'vuex'
+import TimeInterval from '@/components/patterns/TimeInterval'
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
   components: {
     AppTemplate,
     ProtoCurrency,
-    DateFilter
+    DateFilter,
+    TimeInterval
   },
 
   data() {
@@ -101,11 +107,16 @@ export default {
       },
       trades: [],
       filterDate: null,
-      timeInterval: 1
+      timeInterval: 1,
+      loading: false
     }
   },
 
   computed: {
+    ...mapGetters({
+      dateFilter: 'dateFilter/filterDate'
+    }),
+
     currencyTrades() {
       const currencyTrades = {
         GBP: [],
@@ -124,17 +135,9 @@ export default {
       return currencyTrades
     },
 
-    currencies() {
-      return Object.keys(this.currencyTrades)
-    },
+    currencies() { return Object.keys(this.currencyTrades) },
 
-    timeIntervalOptions() {
-      return this.$store.getters['timeInterval/selectOptions']
-    },
-
-    protoNo() {
-      return this.$route.params.id
-    },
+    protoNo() { return parseInt(this.$route.params.no) },
 
     tradeStats() {
       let profitTrades = 0;
@@ -234,37 +237,35 @@ export default {
   },
 
   beforeMount() {
+    this.timeInterval = parseInt(this.$route.params.interval)
     this.uploadProto()
     this.uploadTrades()
-
-    if (!this.timeIntervalOptions.length) {
-      this.$store.dispatch('timeInterval/uploadTimeIntervals')
-    }
   },
 
   methods: {
-    ...mapActions({
-      uploadTrades: 'trades/uploadProtoTrades'
-    }),
-
-    objectKey(object) {
-      return Object.keys(object)
-    },
+    objectKey(object) { return Object.keys(object) },
 
     uploadTrades() {
+      console.log('upload trades')
       let path = `/protos/${this.protoNo}/intervals/${this.timeInterval}/trades`
+      console.log(path)
+      this.loading = true
       
       const dateFilter = this.$store.getters['dateFilter/filterDate'];
       if (dateFilter) path += `?date=${dateFilter}`
 
       getHttpRequest(path)
         .then(res => {
+          if (!res) return
           this.trades = res
+        })
+        .finally(() => {
+          this.loading = false
         })
     },
 
     uploadProto() {
-      const path = `protos/${this.$route.params.id}`
+      const path = `protos/${this.protoNo}`
       getHttpRequest(path)
         .then(res => {
           this.proto = res;
@@ -292,7 +293,18 @@ export default {
   },
 
   watch: {
-    timeInterval() {
+    timeInterval(value) {
+      this.$router.push({name: 'PrototypeAnalysis', params: {
+        no: this.protoNo,
+        interval: value}
+      })
+    },
+
+    '$route'(value) {
+      this.uploadTrades()
+    },
+
+    dateFilter() {
       this.uploadTrades()
     },
 

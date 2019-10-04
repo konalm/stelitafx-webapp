@@ -6,8 +6,7 @@
       </b-col>
 
       <b-col cols lg="3">
-        <b-form-select v-model="timeInterval" :options="timeIntervalOptions">
-        </b-form-select>
+        <time-interval v-model="timeInterval" />
       </b-col>
     </b-row>
 
@@ -29,46 +28,44 @@ import { algosHttpGetRequest } from '@/http/algos';
 import { getHttpRequest } from '@/http/apiRequestV2';
 import ProtoItem from './children/ProtoItem';
 import DateFilter from '@/components/patterns/DateFilter'
+import TimeInterval from '@/components/patterns/TimeInterval'
 
 export default {
   components: {
     AppTemplate,
     ProtoItem,
-    DateFilter
+    DateFilter,
+    TimeInterval
   },
 
   data() {
     return {
       algos: [],
-      timeInterval: 1,
-      timeIntervalOptions: []
+      timeInterval: 1, 
     }
   },
 
   beforeMount() {
-    this.uploadAlgos()
-    this.uploadTimeIntervals()
+    this.timeInterval = parseInt(this.$route.params.interval)
+    this.uploadPrototypes()
   },
 
   methods: {
-    async uploadAlgos() {
+    async uploadPrototypes() {
       algosHttpGetRequest()
         .then(res => {
           this.algos = res;
         })
-    },
-
-    uploadTimeIntervals() {
-      getHttpRequest('intervals')
-        .then(res => {
-          console.log(res)
-
-          this.timeIntervalOptions = res.map((x) => ({
-            value: x,
-            text: x
-          }))
+        .catch(err => {
+          console.error('Failed to upload Prototypes')
         })
-    }
+    },
   },
+
+  watch: {
+    timeInterval(value) {
+      this.$router.push({name: 'Prototypes', params: {interval: value}})
+    }
+  }
 }
 </script>

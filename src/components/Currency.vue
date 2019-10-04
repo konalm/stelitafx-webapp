@@ -9,23 +9,25 @@
       </div>
     </div>
 
-    <b-list-group horizontal class="mt-5 text-center">
-      <b-list-group-item v-for="algo in algos" :key="algo.prototype_no"
-        class="mr-3 px-5"
-      >
-        <p class="lead">Prototype #{{ algo.prototype_no }}</p>
+    <div class="row">
+      <b-list-group horizontal class="mt-5 text-center flex-wrap">
+        <b-list-group-item v-for="algo in algos" :key="algo.prototype_no"
+          class="mr-3 px-5 my-2"
+        >
+          <p class="lead">Prototype #{{ algo.prototype_no }}</p>
 
-        <p class="mt-3">
-          <router-link :to="{name: 'AlgoCurrency',
-            params: {
-              algoNo: algo.prototype_no,
-              currency: abbrev
-          }}">
-            <b-button variant="primary w-100">View</b-button>
-          </router-link>
-        </p>
-      </b-list-group-item>
-    </b-list-group>
+          <p class="mt-3">
+            <router-link :to="{name: 'AlgoCurrency',
+              params: {
+                algoNo: algo.prototype_no,
+                currency: abbrev
+            }}">
+              <b-button variant="primary w-100">View</b-button>
+            </router-link>
+          </p>
+        </b-list-group-item>
+      </b-list-group>
+    </div>
   </app-template>
 </template>
 
@@ -84,9 +86,6 @@ export default {
       return await currencyWMAHttpGetRequest(this.abbrev, WMALength, 0);
     },
 
-    /**
-     *
-     */
     async uploadCurrencyRate() {
       getCurrencyRateHttpGetRequest(this.abbrev)
         .then(res => {
@@ -94,9 +93,6 @@ export default {
         })
     },
 
-    /**
-     *
-     */
     async uploadAlgos() {
       algosHttpGetRequest()
         .then(res => {

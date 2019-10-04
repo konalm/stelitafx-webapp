@@ -16,6 +16,8 @@
 
         <p>{{ duration }}</p>
 
+        <p>TI {{ trade.timeInterval }}
+
         <p v-if="!summary">{{ formatDate(trade.closeDate) }}
           {{ formatTime(trade.closeDate) }}
         </p>
@@ -71,6 +73,10 @@ export default {
       type: Boolean,
       required: false,
       default: true
+    },
+    prototypeNo: {
+      type: Number,
+      required: false
     }
   },
 
@@ -91,19 +97,17 @@ export default {
   },
 
   methods: {
-    formatDate(date) {
-      return moment(date).format('DD/MM/YYYY')
-    },
+    formatDate(date) { return moment(date).format('DD/MM/YYYY') },
 
-    formatTime(date) {
-      return moment(date).format('HH:mm')
-    },
+    formatTime(date) { return moment(date).format('HH:mm') },
 
     redirectToTrade() {
       this.$router.push({
-        name: 'AlgoCurrencyTrade',
+        name: 'TradeAnalysis',
         params: {
-          current: this.currency,
+          protoNo: this.prototypeNo,
+          interval: this.trade.timeInterval,
+          currency: this.currency,
           tradeId: this.trade.id
         }
       })

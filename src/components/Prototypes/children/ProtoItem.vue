@@ -4,17 +4,40 @@
       <p class="lead">prototype #{{ proto.prototype_no }}</p>
       <p><small>{{ proto.description }}</small></p>
 
-      <div v-bind:id="'pieGraph' + proto.prototype_no" class="my-3 text-center"></div>
+      <!-- pie graph -->
+      <div v-bind:id="'pieGraph' + proto.prototype_no" class="my-3 text-center" 
+        v-bind:class="{'d-none': !trades.length}"
+      ></div>
 
-      <p class="text-center">
-        Gained: {{ pips.gained }} | Lost: {{ pips.lost }}
+      <section v-if="!loading" class="text-center">
+        <section v-if="trades.length">
+          <p class="text-center">
+            Gained: {{ pips.gained }} | Lost: {{ pips.lost }}
+          </p>
+
+          <p class="lead text-center mt-3" 
+            v-bind:class="{'text-success': gainedPercent >= 70}"
+          >
+            {{ gainedPercent }} %
+          </p>
+        </section>
+
+        <b-alert show ariant="warning" class="mt-3" v-else>
+          No trades!
+        </b-alert>
+      </section>
+
+      <p class="text-center" v-else>
+        <b-spinner variant="primary" label="Spinning" />
       </p>
 
-      <p class="lead text-center mt-3" v-bind:class="{'text-success': gainedPercent >= 70}">
-        {{ gainedPercent }} %
-      </p>
-
-      <router-link :to="{name: 'Proto', params: {id: proto.prototype_no}}" class="2-10">
+      <router-link class="2-10" :to="{
+        name: 'PrototypeAnalysis', 
+        params: {
+          no: proto.prototype_no,
+          interval: this.timeInterval}
+        }" 
+      >
         <b-button variant="primary" class="mt-2 w-100">View</b-button>
       </router-link>
     </b-card>
@@ -46,7 +69,8 @@ export default {
 
   data() {
     return {
-      trades: []
+      trades: [],
+      loading: false
     }
   },
 
@@ -79,28 +103,34 @@ export default {
 
   methods: {
     async uploadTrades() {
+      this.loading = true
       try {
-        this.trades = await this.$store.dispatch(
-          'trade/uploadProtoTrades',
-          {
-            protoNo: this.proto.prototype_no,
-            interval: this.timeInterval
-          }
-        )
+        const payload = {
+          protoNo: this.proto.prototype_no,
+          interval: this.timeInterval
+        }
+        this.trades = await this.$store.dispatch('trade/uploadProtoTrades', payload)
       } catch (err) {
-        throw new Error(`Failed to upload trades for proto ${this.proto.prototype_no}`)
+        console.error(`Failed to upload trades for proto ${this.proto.prototype_no}`)
+  
+      } finally {
+        this.loading = false
       }
     }
   },
 
   watch: {
+    loading() {
+      clearPieGraph(this.proto.prototype_no)
+      buildPieGraph(this.proto.prototype_no, this.pips.gained, this.pips.lost);
+    },
+
     pips() {
       clearPieGraph(this.proto.prototype_no)
       buildPieGraph(this.proto.prototype_no, this.pips.gained, this.pips.lost);
     },
 
     dateFilter() {
-      console.log('proto item, watch filter date ???')
       this.uploadTrades()
     },
 

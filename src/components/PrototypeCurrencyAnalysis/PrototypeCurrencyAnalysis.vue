@@ -1,13 +1,14 @@
 <template>
   <app-template>
     <b-row>
+
       <!-- header & filters -->
       <b-col>
-        <p class="lead">Prototype: {{ algoId }}</p>
+        <p class="lead">Prototype: {{ protoNo }}</p>
         <p class="lead">Currency: <b>{{ baseCurrency }}/{{ quoteCurrency }}</b></p>
 
         <date-filter class="mt-2" /> 
-        <time-interval class="mt-4" />
+        <time-interval class="mt-4" v-model="timeInterval" />
       </b-col>
 
       <!-- stats -->
@@ -50,7 +51,7 @@
       </b-col>
     </b-row>
 
-    <ul class="nav nav-pills">
+    <ul class="nav nav-pills mt-4">
       <li class="nav-item">
         <a class="nav-link"
           v-bind:class="{active: subView === 1}"
@@ -72,9 +73,12 @@
 
     <!-- Line Graph -->
     <div class="line-graph mt-5" v-if="subView === 1"></div>
+    <b-spinner variant="primary" label="Spinning" v-if="subView === 1 && graphLoading" />
 
     <ul class="list-group mt-5" v-if="subView === 2">
-      <trade v-for="trade in trades" :key="trade.id" :trade="trade" />
+      <trade v-for="trade in trades" :key="trade.id" :trade="trade" 
+        :prototypeNo="protoNo" 
+      />
     </ul>
 
     <b-alert show variant="warning" v-if="trades.length === 0 && tradesUploaded">
@@ -92,7 +96,7 @@ import {
   currenciesRatesHttpGetRequest, currenciesWMADataPointsHttpGetRequest
 } from '@/http/currencyRates';
 import { getHttpRequest } from '@/http/apiRequestV2';
-import { buildLineGraph } from '@/graph/lineGraph';
+import { buildLineGraph, clearLineGraph } from '@/graph/lineGraph';
 import { buildBarGraph, clearBarGraph } from '@/graph/barGraph';
 import formatDataForLineGraph from '@/services/formatDataForLineGraph';
 import groupOrdersIntoTrades from '@/services/groupOrdersIntoTrades';
@@ -114,29 +118,28 @@ export default {
   data() {
     return {
       prototypeNo: 0,
-      baseCurrency: '',
       quoteCurrency: 'USD',
       algoId: 0,
       tradesUploaded: false,
-      subView: 1
+      subView: 1,
+      graphLoading: false,
+      trades: [],
+      timeInterval: 1
     }
   },
+
+    beforeMount() {
+    this.timeInterval = parseInt(this.$route.params.interval)
+    this.uploadTrades({ protoNo: this.protoNo, baseCurrency: this.baseCurrency })
+  },
+
 
   computed: {
     ...mapGetters({
       filterDate: 'dateFilter/filterDate'
     }),
 
-    trades() {
-      return this.$store.getters['trade/protoCurrencyTrades'](
-        this.algoId,
-        this.baseCurrency
-      )
-    },
-
-    totalTrades() {
-      return this.trades.length;
-    },
+    totalTrades() { return this.trades.length; },
 
     totalPips() {
       if (this.trades.length === 0) return {gained: 0, loss: 0}
@@ -152,17 +155,13 @@ export default {
       return {gained, loss};
     },
 
-    profitTrades() {
-      return this.trades.filter((trade) => trade.pips > 0)
-    },
+    profitTrades() { return this.trades.filter((trade) => trade.pips > 0) },
 
-    lossTrades() {
-      return this.trades.filter((trade) => trade.pips < 0)
-    },
+    lossTrades() { return this.trades.filter((trade) => trade.pips < 0) },
 
     tradesBarGraphData() {
       return [
-        {
+{
           label: 'Profit',
           value: this.profitTrades.length,
         },
@@ -185,12 +184,10 @@ export default {
         }
       ];
     },
-  },
 
-  beforeMount() {
-    this.algoId = this.$route.params.algoNo
-    this.baseCurrency = this.$route.params.currency
-    this.uploadTrades({ protoNo: this.algoId, baseCurrency: this.baseCurrency })
+    protoNo() { return parseInt(this.$route.params.no) },
+
+    baseCurrency() { return this.$route.params.currency }
   },
 
   mounted() {
@@ -198,19 +195,14 @@ export default {
   },
 
   methods: {
-    ...mapActions({
-      uploadTrades: 'trade/uploadProtoIntervalCurrencyTrades'
-    }),
+    async uploadTrades() {
+      let path = `/protos/${this.protoNo}/intervals/${this.timeInterval}/currency/${this.baseCurrency}/trades`
+      if (this.filterDate) path += `?date=${this.filterDate}`
+      this.trades = await getHttpRequest(path)
+    },
 
     changeSubView(viewNo) {
       this.subView = viewNo;
-    },
-
-    uploadCurrenciesRates() {
-      currenciesRatesHttpGetRequest(this.baseCurrency, 100)
-        .then(res => {
-          buildLineGraph(ratesForLineGraph, 'line-graph', 1300, 500);
-        });
     },
 
     clearDate() {
@@ -246,18 +238,21 @@ export default {
      *
      */
     async uploadWMAGraph() {
-      const interval = this.$store.getters['timeInterval/interval']
-      const path = `/currency/${this.baseCurrency}/int/${interval}/wma-data-points/40`
+      const path = `/currency/${this.baseCurrency}/int/${this.timeInterval}/wma-data-points/40`
+      this.graphLoading = true
       
       let wmaDataPoints;
       try {
         wmaDataPoints = await getHttpRequest(path);
       } catch (err) {
         throw new Error(err);
+      } finally {
+        this.graphLoading = false
       }
 
       const lineGraphData = this.dataFormatForLineGraph(wmaDataPoints);
 
+      clearLineGraph('line-graph')
       buildLineGraph(lineGraphData, 'line-graph', 1300, 500)
     },
 
@@ -314,7 +309,7 @@ export default {
 
   watch: {
     filterDate() {
-      this.uploadTrades({ protoNo: this.algoId, baseCurrency: this.baseCurrency })
+      // this.uploadTrades({ protoNo: this.algoId, baseCurrency: this.baseCurrency })
     },
 
     subView(value) {
@@ -330,6 +325,13 @@ export default {
       clearBarGraph('avg-per-trade');
       buildBarGraph(this.avgPipsPerTradeGraph, 'avg-per-trade')
     },
+
+    timeInterval() {
+      console.log('time interval updated ???')
+
+      this.uploadWMAGraph()
+      this.uploadTrades()
+    }
   }
 }
 </script>

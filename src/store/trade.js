@@ -46,30 +46,30 @@ const tradeStore = {
       try {
         trades = await getHttpRequest(path)
       } catch (err) {
-        throw new Error('Failed to get trades for proto');
+        throw new Error(err);
       }
 
       return trades
     },
 
-    uploadProtoIntervalCurrencyTrades({ commit, rootGetters }, data) {
+    async uploadProtoIntervalCurrencyTrades ({ commit, rootGetters }, data) {
+      console.log('upload proto interval currency trades')
+
       const dateFilter = rootGetters['dateFilter/filterDate'];
       const interval = rootGetters['timeInterval/interval'];
 
-      let path = `/proto/${data.protoNo}/intervals/${interval}/currency/${data.baseCurrency}`;
+      let path = `/protos/${data.protoNo}/intervals/${interval}/currency/${data.baseCurrency}/trades`;
+      console.log(`path --> ${path}`)
       if (dateFilter) path += `?date=${dateFilter}`
 
-      getHttpRequest(path)
-        .then(res => {
-          commit('setProtoCurrencyTrades', {
-            trades: res,
-            protoNo: data.protoNo,
-            abbrev: `${data.baseCurrency}/USD`
-          });
-        })
-        .catch((err) => {
-          throw new Error('Uploading trades for Prototype & currency');
-        })
+      let trades
+      try {
+        trades = await getHttpRequest(path)
+      } catch (err) {
+        console.error(`Failed to get proto interval currency trades: ${e}`)
+      }
+
+      return trades
     },
 
     updateTradeToViewed(_, tradeId) {

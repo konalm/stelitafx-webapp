@@ -59,6 +59,12 @@ export default {
     }
   },
 
+  computed: {
+    timeInterval() {
+      return this.$store.getters['timeInterval/interval']
+    }
+  },
+
   beforeMount() {
     this.uploadAlgoData()
     this.refreshProtoAlgoData()
@@ -67,7 +73,7 @@ export default {
 
   methods: {
     uploadAlgoData() {
-      const path = `protos/${this.protoNo}/algo-data/${this.currency}`
+      const path = `prototypes/${this.protoNo}/interval/${this.timeInterval}/algo-data/${this.currency}`
       getHttpRequest(path)
         .then(res => {
           this.algoData = res
@@ -82,7 +88,7 @@ export default {
     },
 
     uploadLastTrade() {
-      const path = `proto/${this.protoNo}/currency/${this.currency}/last-trade`
+      const path = `prototypes/${this.protoNo}/interval/${this.timeInterval}/currency/${this.currency}/last-trade`
       getHttpRequest(path)
         .then(res => {
           this.lastTrade = res
@@ -92,6 +98,11 @@ export default {
 
   watch: {
     protoNo() {
+      this.uploadAlgoData()
+      this.uploadLastTrade()
+    },
+
+    timeInterval() {
       this.uploadAlgoData()
       this.uploadLastTrade()
     }

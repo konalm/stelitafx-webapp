@@ -1,13 +1,13 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 
+import Prototypes from '@/components/Prototypes';
+import PrototypeAnalysis from '@/components/PrototypeAnalysis';
 import Home from '@/components/Home.vue';
 import Currency from '@/components/Currency.vue';
-import Protos from '@/components/Protos';
-import AlgoCurrency from '@/components/AlgoCurrency';
-import AlgoCurrencyTrade from '@/components/AlgoCurrencyTrade.vue';
-import Proto from '@/components/Proto';
+import PrototypeCurrencyAnalysis from '@/components/PrototypeCurrencyAnalysis';
 import Monitor from '@/components/Monitor'
+import TradeAnalysis from './components/TradeAnalysis';
 
 Vue.use(Router);
 
@@ -16,7 +16,7 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'Home',
+      name: 'Currencies',
       component: Home
     },
     {
@@ -25,24 +25,29 @@ export default new Router({
       component: Currency
     },
     {
-      path: '/protos',
-      name: 'Protos',
-      component: Protos
+      path: '/prototypes',
+      name: 'Home',
+      redirect: '/prototypes/intervals/1'
     },
     {
-      path: '/algo/:algoNo/currency/:currency',
-      name: 'AlgoCurrency',
-      component: AlgoCurrency
+      path: '/prototypes/intervals/:interval',
+      name: 'Prototypes',
+      component: Prototypes,
     },
     {
-      path: '/algo/:algoNo/currency/:currency/trade/:tradeId',
-      name: 'AlgoCurrencyTrade',
-      component: AlgoCurrencyTrade
+      path: '/prototypes/:no/intervals/:interval',
+      name: 'PrototypeAnalysis',
+      component: PrototypeAnalysis
     },
     {
-      path: '/proto/:id',
-      name: 'Proto',
-      component: Proto
+      path: '/protos/:protoNo/intervals/:interval/currencies/:currency/trade-analysis/:tradeId',
+      name: 'TradeAnalysis',
+      component: TradeAnalysis
+    },
+    {
+      path: '/prototypes/:no/currencies/:currency/intervals/:interval',
+      name: 'PrototypeCurrencyAnalysis',
+      component: PrototypeCurrencyAnalysis
     },
     {
       path: '/monitor',

@@ -1,5 +1,8 @@
 <template>
-  <div v-bind:class="domClassName"></div>
+  <section>
+    <div v-bind:class="domClassName"></div>
+    <b-spinner variant="primary" label="Spinning" v-if="loading" />
+  </section>
 </template>
 
 
@@ -19,7 +22,8 @@ export default {
   data() {
     return {
       quoteCurrency: '',
-      wmaDataPoints: []
+      wmaDataPoints: [],
+      loading: false
     }
   },
 
@@ -29,6 +33,10 @@ export default {
   },
 
   computed: {
+    timeInterval() {
+      return this.$store.getters['timeInterval/interval']
+    },
+
     domClassName() {
       return `${this.currency}-linegraph`
     },
@@ -75,12 +83,17 @@ export default {
 
   methods: {
     uploadWmaDataPoint() {
+      this.loading = true
+
       if (!this.currency) return
 
-      const path = `currency/${this.currency}/wma-data-points/40`
+      const path = `currency/${this.currency}/int/${this.timeInterval}/wma-data-points/40`
       getHttpRequest(path)
         .then(res => {
           this.wmaDataPoints = res
+        })
+        .finally(() => {
+          this.loading = false
         })
     },
 
@@ -95,6 +108,10 @@ export default {
     lineGraphData(value) {
       clearLineGraph(this.domClassName);
       buildLineGraph(value, this.domClassName, 950, 400)
+    },
+
+    timeInterval() {
+      this.uploadWmaDataPoint()
     }
   }
 }

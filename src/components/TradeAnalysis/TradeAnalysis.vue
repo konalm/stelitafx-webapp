@@ -4,6 +4,12 @@
       <b-col col lg="2">
         <p class="lead">Prototype: {{ protoNo }} </p>
         <p class="lead">Currency: {{ currency }} </p>
+        <p class="lead">Time Interval: {{ trade.timeInterval }} </p>
+        <p class="lead p-2 mt-1" 
+          v-bind:class="{'bg-success': trade.account === 'demo'}"
+        >
+          Account: {{ trade.account }}
+        </p>
       </b-col>
 
       <!-- nav to next trade -->
@@ -69,16 +75,108 @@
       </b-col>
     </b-row>
 
-    <b-row>
+    <b-row> <hr /> </b-row>
+
+    <!-- OANDA -->
+    <b-container class="oanda__container">
+      <b-row> 
+        <b-col>
+          <p class="lead">OANDA</p> 
+        </b-col>
+      </b-row>
+
+      <b-row class="oanda__row mt-3">
+        <!-- open -->
+        <b-col>
+          <b-card class="buy">
+            <p> {{ oandaTradeTransactions.open.price }} 
+              <u>
+                <small>(Difference from stelta: 
+                  {{ calculatePip(trade.openRate, oandaTradeTransactions.open.price) }})
+                </small>
+              </u>
+            </p>
+            
+            <p> {{ formatDate(oandaTradeTransactions.open.time) }} 
+              {{ formatTime(oandaTradeTransactions.open.time) }}
+            </p>
+            <!-- <p> trade opened: {{ oandaTradeTransactions.open.tradeOpened }}</p> -->
+            <p class="mt-2"> bids: </p>
+            <p v-for="(bid, index) in oandaTradeTransactions.open.fullPrice.bids"
+              :key="index"
+            >
+              {{ bid.price }} 
+              <u> 
+                <small> (Difference from stelita: 
+                  {{ calculatePip(trade.openRate, bid.price) }})
+                </small>
+              </u>
+            </p>
+          </b-card>
+        </b-col>
+
+        <!-- close -->
+        <b-col>
+          <b-card class="sell">
+            <p> {{ oandaTradeTransactions.close.price }}
+              <u>
+                <small>(Difference from stelita: 
+                  {{ calculatePip(trade.closeRate, oandaTradeTransactions.close.price) }})
+                </small>
+              </u>
+            </p>
+            <p>{{ formatDate(oandaTradeTransactions.close.time) }}
+              {{ formatTime(oandaTradeTransactions.close.time) }}
+            </p>
+            <!-- <p> trade closed: {{ oandaTradeTransactions.close.tradesClosed }} </p> -->
+            <p class="mt-2"> bids: </p>
+            <p v-for="(bid, index) in  oandaTradeTransactions.close.fullPrice.bids"
+              :key="index"
+            > 
+              {{ bid.price }} 
+              <u><small>(Difference from stelita: 
+                {{ calculatePip(trade.closeRate, bid.price) }})
+                </small>
+              </u>
+            </p>
+          </b-card>
+        </b-col>
+
+        <!-- summary -->
+        <b-col>
+          <b-card class="summary">
+            <p> 
+              {{ 
+                calculatePip(
+                  oandaTradeTransactions.open.price,
+                  oandaTradeTransactions.close.price
+                )
+              }} 
+            </p>
+
+            <p> If got bid price: 
+              {{ 
+                calculatePip(
+                  oandaTradeTransactions.open.fullPrice.bids[0].price,
+                  oandaTradeTransactions.close.price
+                )
+              }}
+            </p>
+          </b-card>
+        </b-col>
+      </b-row>
+    </b-container>
+    
+    <!-- <b-row>
       <b-col>
         <p class="lead">Lowest from open: {{ lowestPipFromOpenTrade }}</p>
         <p class="lead">Highest from open: {{ highestPipFromOpen }}</p>
 
       </b-col>
-    </b-row>
+    </b-row> -->
 
     <!-- pip movement data -->
-    <b-row class="mt-5">
+    <!-- <b-row class="mt-5">
       <b-col>
         <div class="pip-movement__container">
           <div class="item" v-for="(pip, index) in pipMovement" :key="index">
@@ -86,32 +184,28 @@
           </div>
         </div>
       </b-col>
-    </b-row>
+    </b-row> -->
 
     <!-- open trade stats -->
-    <b-row class="mt-5">
+    <!-- <b-row class="mt-5">
       <b-col>
         {{ trade.openStats }}
       </b-col>
-    </b-row>
+    </b-row> -->
 
     <!-- Line Graph -->
-    <b-row>
+    <b-row class="mb-3">
       <b-col>
         <div class="line-graph"></div>
       </b-col>
     </b-row>
 
-    <b-row>
-      <b-col col lg="2">
+    <b-row class="mt-3">
+      <b-col col lg="2" class="mt-4">
         <date-filter />
       </b-col>
-    </b-row>
 
-    <b-row>
-      <b-col>
-        <hr />
-      </b-col>
+      <b-col col lg="2" class="mt-4"> {{ trade.timeInterval }} </b-col>
     </b-row>
 
     <b-row>
@@ -121,6 +215,7 @@
           <trade v-for="trade in trades" :key="trade.id" :trade="trade"
             :summary="true"
             :inView="trade.id === tradeId"
+            :prototypeNo="protoNo"
             class="item"
           />
         </div>
@@ -138,7 +233,7 @@ import { buildLineGraph, clearLineGraph } from '@/graph/lineGraph';
 import { compareHourAndMin, durationOfTrade } from '@/services/utils';
 import pipCalculator from '@/services/pipCalculator';
 import DateFilter from '@/components/patterns/DateFilter';
-import Trade from '@/components/AlgoCurrency/children/Trade';
+import Trade from '@/components/PrototypeCurrencyAnalysis/children/Trade';
 import { mapGetters, mapActions } from 'vuex';
 
 
@@ -161,16 +256,19 @@ export default {
       },
 
       wmaData: [],
-      isImageModalActive: true
+      isImageModalActive: true,
+      trades: [],
+      oandaTradeTransactions: {
+        open: {},
+        close: {}
+      }
     }
   },
 
   beforeMount() {
     this.uploadTrade();
-
-    if (this.trades.length === 0) {
-      this.uploadTrades({ protoNo: this.protoNo, baseCurrency: this.currency })
-    }
+    this.uploadTrades();
+    this.uploadOandaTradeTransactions()
   },
 
   mounted() {
@@ -178,48 +276,30 @@ export default {
   },
 
   computed: {
-    ...mapGetters({
-      filterDate: 'dateFilter/filterDate'
-    }),
+    filterDate() { return this.$store.getters['dateFilter/filterDate'] },
 
-    trades() {
-      return this.$store.getters['trade/protoCurrencyTrades'](
-        this.protoNo,
-        this.currency
-      );
-    },
-
+    timeInterval() { return this.$store.getters['timeInterval/interval'] },
+ 
     tradePercentDiff() {
       const diff = this.trade.openRate - this.trade.closeRate;
       return (diff / this.trade.openRate * 100) * -1;
     },
 
-    /**
-     * duration between the buy and sell order
-     */
-    duration() {
-      return durationOfTrade(this.trade.openDate, this.trade.closeDate)
-    },
+    /* duration between the buy and sell order */
+    duration() { return durationOfTrade(this.trade.openDate, this.trade.closeDate) },
 
-    protoNo() {
-      return this.$route.params.algoNo
-    },
+    protoNo() { return parseInt(this.$route.params.protoNo) },
 
-    currency() {
-      return this.$route.params.currency
-    },
+    currency() { return this.$route.params.currency; },
 
-    tradeId() {
-      return this.$route.params.tradeId;
-    },
+    tradeId() { return this.$route.params.tradeId; },
 
     /**
      *
      */
     formattedDataForLineGraph() {
-      console.log('format data for line graph ')
-      console.log(this.wmaData)
-      console.log('< ---------')
+     if (!this.wmaData.length) return 
+     if (!this.trade) return
 
       const dataPoints = this.wmaData.map((dataPoint) => ({
         date: dataPoint.date,
@@ -230,7 +310,7 @@ export default {
         twelveWMA: dataPoint.WMAs["12"],
         fifteenWMA: dataPoint.WMAs["15"],
         thirtySixWMA: dataPoint.WMAs["36"],
-        twoHundredWMA: dataPoints.WMAs["200"]
+        twoHundredWMA: dataPoint.WMAs["200"]
       }));
       let details = [
         {
@@ -349,7 +429,9 @@ export default {
     tradeOpenIndex() {
       const wmaData = [...this.wmaData];
       wmaData.sort((a, b) => new Date(a.date) - new Date(b.date));
-      return wmaData.findIndex(compareHourAndMin, this.trade.openDate);
+      const i =  wmaData.findIndex(compareHourAndMin, this.trade.openDate);
+      console.log(`trade open index --> ${i}`)
+      return i
     },
 
     tradeCloseIndex() {
@@ -360,6 +442,7 @@ export default {
 
     rateShortWMAPipDiffOnOpen() {
       if (this.wmaData.length === 0) return;
+      if (this.tradeOpenIndex < 0) return;
 
       const rate = this.trade.openRate;
       const tradeOpenShortWMA = this.wmaData[this.tradeOpenIndex].WMAs['12'];
@@ -367,7 +450,8 @@ export default {
     },
 
     rateShortWMAPipDiffOnClose() {
-      if (this.wmaData.length === 0) return;
+      if (this.wmaData.length === 0) return
+      if (this.tradeCloseIndex) return
 
       const rate = this.trade.closeRate;
       const tradeCloseShortWMA = this.wmaData[this.tradeCloseIndex].WMAs['12'];
@@ -381,8 +465,6 @@ export default {
       const wmaDataBetweenTrades =
         wmaData.splice(this.tradeOpenIndex, betweenTradesLength);
 
-      console.log(wmaDataBetweenTrades.length)
-
       const pipsFromOpenTrade = [];
       wmaDataBetweenTrades.forEach((dataPoint) => {
         const pip = pipCalculator(this.trade.openRate, dataPoint.rate);
@@ -392,20 +474,30 @@ export default {
       return pipsFromOpenTrade
     },
 
-    lowestPipFromOpenTrade() {
-      return Math.min(...this.pipsFromOpenTrade)
-    },
+    lowestPipFromOpenTrade() { return Math.min(...this.pipsFromOpenTrade) },
 
-    highestPipFromOpen() {
-      return Math.max(...this.pipsFromOpenTrade)
-    },
+    highestPipFromOpen() { return Math.max(...this.pipsFromOpenTrade) },
   },
 
   methods: {
-    ...mapActions({
-      uploadTrades: 'trade/uploadProtoCurrencyTrades',
-      setTradeToViewed: 'trade/updateTradeToViewed'
-    }),
+    calculatePip(x, y) {
+      return pipCalculator(x, y );
+    },
+
+    uploadOandaTradeTransactions() {
+      const path = `oanda-trade-transactions/${this.tradeId}`
+      getHttpRequest(path)
+        .then(res => {
+          console.log('oanda trade transactions res -->')
+          console.log(res)
+
+          this.oandaTradeTransactions.open = res.openTradeTransaction
+          this.oandaTradeTransactions.close = res.closeTradeTransaction
+        })
+        .catch (e => {
+          console.error(`Failed to upload onda transactions: ${e}`)
+        })
+    },
 
     goToPrevTrade() {
       const path = `prev-trade/${this.tradeId}`
@@ -444,6 +536,7 @@ export default {
 
     uploadWMAData() {
       this.wmaData = [];
+
       const path = `wma/${this.currency}/trade/${this.tradeId}`;
       getHttpRequest(path)
         .then(res => {
@@ -461,6 +554,7 @@ export default {
       getHttpRequest(path)
         .then(res => {
           this.trade = res;
+          this.$store.dispatch('timeInterval/updateInterval', res.timeInterval)
         });
     },
 
@@ -471,33 +565,61 @@ export default {
     formatTime(date) {
       return moment(date).format('HH:mm')
     },
+
+     async uploadTrades() {
+      let path = `/protos/${this.protoNo}/intervals/${this.timeInterval}/currency/${this.currency}/trades`
+      if (this.filterDate) path += `?date=${this.filterDate}`
+
+      this.trades = await getHttpRequest(path)
+    },
+
+    addTradeOpenClassToWMAGraph() {
+      if (this.tradeOpenIndex < 0) return 
+
+      const xGridTicks = document.querySelectorAll(".x-grid .tick");
+      if (!xGridTicks) return
+      if (xGridTicks.length < this.tradeOpenIndex) return
+
+      xGridTicks[this.tradeOpenIndex].classList.add("trade-open")
+    },
+
+    addTradeCloseClassToWMAGraph() {
+      if (this.tradeCloseIndex < 0) return
+
+      const xGridTicks = document.querySelectorAll(".x-grid .tick");
+      if (!xGridTicks) return
+      if (xGridTicks.length < this.tradeCloseIndex) return
+
+      xGridTicks[this.tradeCloseIndex].classList.add("trade-close")
+    }
   },
 
   watch: {
     filterDate() {
-      this.uploadTrades({ protoNo: this.protoNo, baseCurrency: this.currency })
+      this.uploadTrades()
     },
 
     formattedDataForLineGraph(value) {
       clearLineGraph('line-graph')
       buildLineGraph(value, 'line-graph', 1310, 500);
+      this.addTradeOpenClassToWMAGraph()
+      this.addTradeCloseClassToWMAGraph()
     },
 
-    tradeOpenIndex(value) {
-      if (value < 0) return;
-
-      const xGridTicks = document.querySelectorAll(".x-grid .tick");
-      xGridTicks[value].classList.add("trade-open")
+    tradeOpenIndex() {
+      this.addTradeOpenClassToWMAGraph()
     },
 
-    tradeCloseIndex(value) {
-      if (value < 0) return;
-      const xGridTicks = document.querySelectorAll(".x-grid .tick");
-      xGridTicks[value].classList.add("trade-close")
+    tradeCloseIndex() {
+     this.addTradeCloseClassToWMAGraph()
+    },
+
+    timeInterval() {
+      this.uploadTrades()
     },
 
     trade(value) {
-      if (!value.viewed) this.setTradeToViewed(this.tradeId)
+      // if (!value.viewed) this.setTradeToViewed(this.tradeId)
     },
 
     /* reload trade & WMA data when routed to another trade */
@@ -505,6 +627,10 @@ export default {
       this.uploadTrade()
       this.uploadWMAData()
       window.scrollTo(0,0)
+    },
+
+    filterDate () {
+      console.log('watching filter date from the store ???')
     }
   }
 }
@@ -512,15 +638,23 @@ export default {
 
 
 <style lang="scss">
+.oanda__container {
+  border: 1px solid rgba(0,0,0,0.1);
+  padding: 15px;
+
+  .oanda__row {
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
 .trades__container {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
 
   .item {
-    // margin-left: 20px;
     flex: 1;
-    // width: 20%;
     min-width: 200px;
     margin: 5px 10px;
   }

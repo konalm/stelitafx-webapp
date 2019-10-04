@@ -10,11 +10,11 @@
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav>
           <b-nav-item>
-            <router-link :to="{name: 'Protos'}"> Protos </router-link>
+            <router-link :to="{name: 'Home'}"> Prototypes </router-link>
           </b-nav-item>
 
           <b-nav-item>
-            <router-link :to="{name: 'Home'}"> Currencies </router-link>
+            <router-link :to="{name: 'Currencies'}"> Currencies </router-link>
           </b-nav-item>
 
           <b-nav-item>

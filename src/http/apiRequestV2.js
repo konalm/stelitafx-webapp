@@ -19,13 +19,9 @@ export const getHttpRequest = async (path) => {
   try {
     response = await httpInstance.get(path);
   } catch (err) {
-    console.log('CATCH !!!')
-    console.log(err)
-    throw new Error(`http get request to api for path >> ${path} \n ${err}`);
+    console.error(`http get request to api for path >> ${path}`);
+    throw new Error(err)
   }
-
-  console.log('response -->')
-  console.log(response)
 
   return response.data
 }

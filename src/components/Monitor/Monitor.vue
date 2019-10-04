@@ -4,11 +4,15 @@
       <b-col col lg="2">
         <b-form-select v-model="protoNo" :options="protoOptions" />
       </b-col>
+
+      <b-col col lg="2">
+        <time-interval />
+      </b-col>
     </b-row>
 
     <monitor-currency v-for="currency in majorCurrencies" :key="currency"
       :protoNo="protoNo"
-      :currency="currency" 
+      :currency="currency"
     />
   </app-template>
 </template>
@@ -17,11 +21,14 @@
 import AppTemplate from '@/components/patterns/AppTemplate'
 import MonitorCurrency from './children/MonitorCurrency'
 import { getHttpRequest } from '@/http/apiRequestV2';
+import TimeInterval from '@/components/patterns/TimeInterval';
+
 
 export default {
   components: {
     AppTemplate,
-    MonitorCurrency
+    MonitorCurrency,
+    TimeInterval
   },
 
   data() {
