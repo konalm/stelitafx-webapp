@@ -75,97 +75,7 @@
       </b-col>
     </b-row>
 
-    <b-row> <hr /> </b-row>
-
-    <!-- OANDA -->
-    <b-container class="oanda__container">
-      <b-row> 
-        <b-col>
-          <p class="lead">OANDA</p> 
-        </b-col>
-      </b-row>
-
-      <b-row class="oanda__row mt-3">
-        <!-- open -->
-        <b-col>
-          <b-card class="buy">
-            <p> {{ oandaTradeTransactions.open.price }} 
-              <u>
-                <small>(Difference from stelta: 
-                  {{ calculatePip(trade.openRate, oandaTradeTransactions.open.price) }})
-                </small>
-              </u>
-            </p>
-            
-            <p> {{ formatDate(oandaTradeTransactions.open.time) }} 
-              {{ formatTime(oandaTradeTransactions.open.time) }}
-            </p>
-            <!-- <p> trade opened: {{ oandaTradeTransactions.open.tradeOpened }}</p> -->
-            <p class="mt-2"> bids: </p>
-            <p v-for="(bid, index) in oandaTradeTransactions.open.fullPrice.bids"
-              :key="index"
-            >
-              {{ bid.price }} 
-              <u> 
-                <small> (Difference from stelita: 
-                  {{ calculatePip(trade.openRate, bid.price) }})
-                </small>
-              </u>
-            </p>
-          </b-card>
-        </b-col>
-
-        <!-- close -->
-        <b-col>
-          <b-card class="sell">
-            <p> {{ oandaTradeTransactions.close.price }}
-              <u>
-                <small>(Difference from stelita: 
-                  {{ calculatePip(trade.closeRate, oandaTradeTransactions.close.price) }})
-                </small>
-              </u>
-            </p>
-            <p>{{ formatDate(oandaTradeTransactions.close.time) }}
-              {{ formatTime(oandaTradeTransactions.close.time) }}
-            </p>
-            <!-- <p> trade closed: {{ oandaTradeTransactions.close.tradesClosed }} </p> -->
-            <p class="mt-2"> bids: </p>
-            <p v-for="(bid, index) in  oandaTradeTransactions.close.fullPrice.bids"
-              :key="index"
-            > 
-              {{ bid.price }} 
-              <u><small>(Difference from stelita: 
-                {{ calculatePip(trade.closeRate, bid.price) }})
-                </small>
-              </u>
-            </p>
-          </b-card>
-        </b-col>
-
-        <!-- summary -->
-        <b-col>
-          <b-card class="summary">
-            <p> 
-              {{ 
-                calculatePip(
-                  oandaTradeTransactions.open.price,
-                  oandaTradeTransactions.close.price
-                )
-              }} 
-            </p>
-
-            <p> If got bid price: 
-              {{ 
-                calculatePip(
-                  oandaTradeTransactions.open.fullPrice.bids[0].price,
-                  oandaTradeTransactions.close.price
-                )
-              }}
-            </p>
-          </b-card>
-        </b-col>
-      </b-row>
-    </b-container>
+    <oanda-analysis :tradeId="tradeId" :trade="trade" />
     
     <!-- <b-row>
       <b-col>
@@ -202,7 +112,7 @@
 
     <b-row class="mt-3">
       <b-col col lg="2" class="mt-4">
-        <date-filter />
+        <date-filter v-model="dateFilter" />
       </b-col>
 
       <b-col col lg="2" class="mt-4"> {{ trade.timeInterval }} </b-col>
@@ -228,12 +138,13 @@
 <script>
 import moment from 'moment';
 import AppTemplate from '@/components/patterns/AppTemplate';
+import OandaAnalysis from './children/OandaAnalysis';
 import { getHttpRequest } from '@/http/apiRequestV2';
 import { buildLineGraph, clearLineGraph } from '@/graph/lineGraph';
 import { compareHourAndMin, durationOfTrade } from '@/services/utils';
 import pipCalculator from '@/services/pipCalculator';
 import DateFilter from '@/components/patterns/DateFilter';
-import Trade from '@/components/PrototypeCurrencyAnalysis/children/Trade';
+import Trade from '@/components/patterns/TradeSummaryCard';
 import { mapGetters, mapActions } from 'vuex';
 
 
@@ -241,7 +152,8 @@ export default {
   components: {
     AppTemplate,
     DateFilter,
-    Trade
+    Trade,
+    OandaAnalysis
   },
 
   data() {
@@ -258,17 +170,13 @@ export default {
       wmaData: [],
       isImageModalActive: true,
       trades: [],
-      oandaTradeTransactions: {
-        open: {},
-        close: {}
-      }
+      dateFilter: ''
     }
   },
 
   beforeMount() {
     this.uploadTrade();
     this.uploadTrades();
-    this.uploadOandaTradeTransactions()
   },
 
   mounted() {
@@ -484,21 +392,6 @@ export default {
       return pipCalculator(x, y );
     },
 
-    uploadOandaTradeTransactions() {
-      const path = `oanda-trade-transactions/${this.tradeId}`
-      getHttpRequest(path)
-        .then(res => {
-          console.log('oanda trade transactions res -->')
-          console.log(res)
-
-          this.oandaTradeTransactions.open = res.openTradeTransaction
-          this.oandaTradeTransactions.close = res.closeTradeTransaction
-        })
-        .catch (e => {
-          console.error(`Failed to upload onda transactions: ${e}`)
-        })
-    },
-
     goToPrevTrade() {
       const path = `prev-trade/${this.tradeId}`
       getHttpRequest(path)
@@ -616,10 +509,6 @@ export default {
 
     timeInterval() {
       this.uploadTrades()
-    },
-
-    trade(value) {
-      // if (!value.viewed) this.setTradeToViewed(this.tradeId)
     },
 
     /* reload trade & WMA data when routed to another trade */

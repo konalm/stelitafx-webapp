@@ -17,6 +17,7 @@
   </app-template>
 </template>
 
+
 <script>
 import AppTemplate from '@/components/patterns/AppTemplate'
 import MonitorCurrency from './children/MonitorCurrency'

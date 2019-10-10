@@ -48,6 +48,7 @@
 <script>
 import { buildPieGraph, clearPieGraph } from '@/graph/pieGraph';
 import { calcPercentangeOfGain } from '@/services/utils';
+import { getHttpRequest } from '@/http/apiRequestV2';
 import { mapGetters } from 'vuex';
 
 export default {
@@ -64,6 +65,10 @@ export default {
       type: Number,
       required: false,
       default: 1
+    },
+    filteredDate: {
+      type: [Date, String],
+      required: true
     }
   },
 
@@ -79,10 +84,6 @@ export default {
   },
 
   computed: {
-    ...mapGetters({
-      dateFilter: 'dateFilter/filterDate'
-    }),
-
     pips() {
       if (!this.trades || this.trades.length === 0) return { gained: 0, lost: 0 }
 
@@ -104,15 +105,15 @@ export default {
   methods: {
     async uploadTrades() {
       this.loading = true
+
+      let path = `/protos/${this.proto.prototype_no}/intervals/${this.timeInterval}/trades`
+      if (this.filteredDate) path += `?date=${this.filteredDate}`
+
+      this.trades = []
       try {
-        const payload = {
-          protoNo: this.proto.prototype_no,
-          interval: this.timeInterval
-        }
-        this.trades = await this.$store.dispatch('trade/uploadProtoTrades', payload)
+        this.trades = await getHttpRequest(path)
       } catch (err) {
         console.error(`Failed to upload trades for proto ${this.proto.prototype_no}`)
-  
       } finally {
         this.loading = false
       }
@@ -130,7 +131,7 @@ export default {
       buildPieGraph(this.proto.prototype_no, this.pips.gained, this.pips.lost);
     },
 
-    dateFilter() {
+    filteredDate() {
       this.uploadTrades()
     },
 

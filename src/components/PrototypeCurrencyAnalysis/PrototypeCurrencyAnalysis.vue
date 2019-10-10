@@ -7,32 +7,63 @@
         <p class="lead">Prototype: {{ protoNo }}</p>
         <p class="lead">Currency: <b>{{ baseCurrency }}/{{ quoteCurrency }}</b></p>
 
-        <date-filter class="mt-2" /> 
+        <date-filter class="mt-2" v-model="filteredDate" /> 
         <time-interval class="mt-4" v-model="timeInterval" />
       </b-col>
 
       <!-- stats -->
       <b-col col lg="2">
-        <b-card class="mt-2">
-          <p> Pips gained
-            <span class="text-success">{{ totalPips.gained }}</span>
-          </p>
+        <b-row>
+          <b-col>
+            <b-card class="mt-2">
+              <p> Pips gained
+                <span class="text-success">{{ totalPips.gained }}</span>
+              </p>
 
-          <p> Pips loss
-            <span class="text-danger">{{ totalPips.loss }}</span>
-          </p>
+              <p> Pips loss
+                <span class="text-danger">{{ totalPips.loss }}</span>
+              </p>
 
-          <p class="lead mt-4">
-            <b>
-              <span v-bind:class="{
-                'text-success': totalPips.gained - totalPips.loss > 0,
-                'text-danger': totalPips.gained - totalPips.loss < 0
-              }">
-                {{ totalPips.gained - totalPips.loss }}
-              </span>
-            </b>
-          </p>
-        </b-card>
+              <p class="lead mt-4">
+                <b>
+                  <span v-bind:class="{
+                    'text-success': totalPips.gained - totalPips.loss > 0,
+                    'text-danger': totalPips.gained - totalPips.loss < 0
+                  }">
+                    {{ totalPips.gained - totalPips.loss }}
+                  </span>
+                </b>
+              </p>
+            </b-card>
+          </b-col>
+        </b-row>
+
+        <!-- Oanda -->
+        <b-row class="mt-2">
+          <b-col>
+            <b-card>
+              <p class="lead">Oanda</p>
+              <p class="mt-2">Gained: 
+                <span class="text-success">{{ totalOandaPips.gained }}</span>
+              </p>
+
+              <p>Lost: 
+                <span class="text-danger">{{ totalOandaPips.lost }}</span>
+              </p>
+
+              <p class="lead mt-4">
+                <b>
+                  <span v-bind:class="{
+                    'text-success': totalOandaPips.gained - totalOandaPips.lost > 0,
+                    'text-danger': totalOandaPips.gained - totalOandaPips.lost < 0
+                  }">
+                    {{ totalOandaPips.gained - totalOandaPips.lost }}
+                  </span>
+                </b>
+              </p>
+            </b-card>
+          </b-col>
+        </b-row>
       </b-col>
 
       <!-- trades graph -->
@@ -100,12 +131,12 @@ import { buildLineGraph, clearLineGraph } from '@/graph/lineGraph';
 import { buildBarGraph, clearBarGraph } from '@/graph/barGraph';
 import formatDataForLineGraph from '@/services/formatDataForLineGraph';
 import groupOrdersIntoTrades from '@/services/groupOrdersIntoTrades';
-import Trade from './children/Trade';
+import Trade from '@/components/patterns/TradeSummaryCard';
 import DateFilter from '@/components/patterns/DateFilter';
 import { mapGetters, mapActions } from 'vuex';
 import TimeInterval from '@/components/patterns/TimeInterval';
+import { beginningOfDay } from '@/services/utils';
 
-let FILTER_DATE_TIME = new Date();
 
 export default {
   components: {
@@ -124,21 +155,18 @@ export default {
       subView: 1,
       graphLoading: false,
       trades: [],
-      timeInterval: 1
+      timeInterval: 1,
+      filteredDate: beginningOfDay(0)
     }
   },
 
-    beforeMount() {
+  beforeMount() {
     this.timeInterval = parseInt(this.$route.params.interval)
     this.uploadTrades({ protoNo: this.protoNo, baseCurrency: this.baseCurrency })
   },
 
 
   computed: {
-    ...mapGetters({
-      filterDate: 'dateFilter/filterDate'
-    }),
-
     totalTrades() { return this.trades.length; },
 
     totalPips() {
@@ -155,13 +183,35 @@ export default {
       return {gained, loss};
     },
 
-    profitTrades() { return this.trades.filter((trade) => trade.pips > 0) },
+    totalOandaPips() {
+      if (this.trades.length === 0) return {gained: 0, lost: 0}
 
-    lossTrades() { return this.trades.filter((trade) => trade.pips < 0) },
+      let gained = 0
+      let lost = 0
+
+      this.trades.forEach((t) => {
+        if (t.oandaPips > 0) gained += t.oandaPips
+        if (t.oandaPips < 0) lost += t.oandaPips * -1
+      })
+
+      return {gained, lost}
+    },
+
+    profitTrades() { 
+      if (!this.trades) return []
+
+      return this.trades.filter((trade) => trade.pips > 0) 
+    },
+
+    lossTrades() { 
+      if (!this.trades) return []
+
+      return this.trades.filter((trade) => trade.pips < 0) 
+    },
 
     tradesBarGraphData() {
       return [
-{
+        {
           label: 'Profit',
           value: this.profitTrades.length,
         },
@@ -197,8 +247,13 @@ export default {
   methods: {
     async uploadTrades() {
       let path = `/protos/${this.protoNo}/intervals/${this.timeInterval}/currency/${this.baseCurrency}/trades`
-      if (this.filterDate) path += `?date=${this.filterDate}`
-      this.trades = await getHttpRequest(path)
+      if (this.filteredDate) path += `?date=${this.filteredDate}`
+
+      try {
+        this.trades = await getHttpRequest(path)
+      } catch (e) {
+        console.error(`Failed to upload trades: ${e}`)
+      }
     },
 
     changeSubView(viewNo) {
@@ -273,24 +328,25 @@ export default {
         {
           key: 'rate',
           colour: 'black',
-          width: 1,
-        }, {
-          key: 'fiveWMA',
-          colour: 'blue',
-          width: 2
-        }, {
-          key: 'twelveWMA',
-          colour: 'red',
-          width: 2
-        }, {
-          key: 'fifteenWMA',
-          colour: 'rgba(0, 122, 255, 0.4)',
-          width: 1
-        }, {
-          key: 'thirtySixWMA',
-          colour: 'rgba(215, 46, 61, 0.4)',
-          width: 1
-        }
+          width: 5,
+        }, 
+        // {
+        //   key: 'fiveWMA',
+        //   colour: 'blue',
+        //   width: 2
+        // }, {
+        //   key: 'twelveWMA',
+        //   colour: 'red',
+        //   width: 2
+        // }, {
+        //   key: 'fifteenWMA',
+        //   colour: 'rgba(0, 122, 255, 0.4)',
+        //   width: 1
+        // }, {
+        //   key: 'thirtySixWMA',
+        //   colour: 'rgba(215, 46, 61, 0.4)',
+        //   width: 1
+        // }
       ];
 
       return {dataPoints, details}
@@ -301,15 +357,14 @@ export default {
      */
     tradeClass(transaction) {
       if (transaction === 'buy') return 'bg-primary'
-
       return 'bg-danger'
     }
   },
 
 
   watch: {
-    filterDate() {
-      // this.uploadTrades({ protoNo: this.algoId, baseCurrency: this.baseCurrency })
+    filteredDate() {
+      this.uploadTrades()
     },
 
     subView(value) {
@@ -327,8 +382,6 @@ export default {
     },
 
     timeInterval() {
-      console.log('time interval updated ???')
-
       this.uploadWMAGraph()
       this.uploadTrades()
     }

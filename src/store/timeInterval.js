@@ -29,6 +29,18 @@ const timeIntervalStore = {
           const selectOptions = res.map((x) => ({ value: x, text: x }))
           commit('setSelectOptions', selectOptions)
         })
+    },
+
+    async getIntervals() {
+      let response
+      try {
+        response = getHttpRequest('intervals')
+      } catch (e) {
+        console.error('Failed to get time intervals from API')
+        return 
+      }
+
+      return response
     }
   },
 

@@ -20,6 +20,10 @@
           <b-nav-item>
             <router-link :to="{name: 'Monitor'}"> Monitor </router-link>
           </b-nav-item>
+
+          <b-nav-item>
+            <router-link :to="{name: 'Charting'}"> Charting </router-link>
+          </b-nav-item>
         </b-navbar-nav>
       </b-collapse>
     </b-navbar>

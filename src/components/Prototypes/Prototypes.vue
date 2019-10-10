@@ -2,7 +2,7 @@
   <app-template>
     <b-row class="my-3">
       <b-col cols lg="3">
-        <date-filter />
+        <date-filter v-model="filteredDate" />
       </b-col>
 
       <b-col cols lg="3">
@@ -16,6 +16,7 @@
       <proto-item v-for="proto in algos" :key="proto.prototype_no" 
         :timeInterval="timeInterval"
         :proto="proto"
+        :filteredDate="filteredDate"
       />
     </b-row>
   </app-template>
@@ -29,6 +30,7 @@ import { getHttpRequest } from '@/http/apiRequestV2';
 import ProtoItem from './children/ProtoItem';
 import DateFilter from '@/components/patterns/DateFilter'
 import TimeInterval from '@/components/patterns/TimeInterval'
+import { beginningOfDay } from '@/services/utils';
 
 export default {
   components: {
@@ -42,6 +44,7 @@ export default {
     return {
       algos: [],
       timeInterval: 1, 
+      filteredDate: beginningOfDay(0)
     }
   },
 

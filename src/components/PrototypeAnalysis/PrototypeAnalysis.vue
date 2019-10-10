@@ -9,7 +9,7 @@
 
         <b-row class="mt-3 mb-2">
           <b-col col lg="5">
-            <date-filter />
+            <date-filter v-model="filteredDate" />
           </b-col>
 
           <b-col col lg="5">
@@ -74,6 +74,20 @@
       </b-row>
     </b-card>
 
+    <!-- Oanda Overall Performance -->
+    <b-row class="my-4">
+      <b-col>
+        <b-card>
+          <p class="lead mb-3">Oanda</p>
+
+          <p>gained {{ oandaTradeStats.totalPipsGained }}</p>
+          <p>lost  {{ oandaTradeStats.totalPipsLost }}</p>
+
+          <div id="pieGraphOandaOverallPerformance" class="mt-4"></div>
+        </b-card>
+      </b-col>
+    </b-row>
+
     <b-spinner variant="primary" label="Spinning" v-if="loading" />
   </app-template>
 </template>
@@ -89,6 +103,7 @@ import moment from 'moment';
 import DateFilter from '@/components/patterns/DateFilter.vue'
 import TimeInterval from '@/components/patterns/TimeInterval'
 import { mapGetters, mapActions } from 'vuex'
+import { beginningOfDay } from '@/services/utils';
 
 export default {
   components: {
@@ -106,7 +121,7 @@ export default {
         description: '',
       },
       trades: [],
-      filterDate: null,
+      filteredDate: beginningOfDay(0),
       timeInterval: 1,
       loading: false
     }
@@ -167,6 +182,23 @@ export default {
         avgPipsGainedPerTrade: totalPipsGained / profitTrades,
         avgPipsLossPerTrade: totalPipsLoss / lossTrades
       };
+    },
+
+    oandaTradeStats() {
+      let totalPipsGained = 0
+      let totalPipsLost = 0
+
+      this.trades.forEach((t) => {
+        const pips = t.oandaPips
+
+        if (pips > 0) totalPipsGained += pips
+        if (pips < 0) totalPipsLost += pips * -1
+      })
+
+      return {
+        totalPipsGained,
+        totalPipsLost
+      }
     },
 
     allTradesGraphData() {
@@ -246,14 +278,10 @@ export default {
     objectKey(object) { return Object.keys(object) },
 
     uploadTrades() {
-      console.log('upload trades')
-      let path = `/protos/${this.protoNo}/intervals/${this.timeInterval}/trades`
-      console.log(path)
       this.loading = true
-      
-      const dateFilter = this.$store.getters['dateFilter/filterDate'];
-      if (dateFilter) path += `?date=${dateFilter}`
 
+      let path = `/protos/${this.protoNo}/intervals/${this.timeInterval}/trades`
+      if (this.filteredDate) path += `?date=${this.filteredDate}`
       getHttpRequest(path)
         .then(res => {
           if (!res) return
@@ -290,6 +318,14 @@ export default {
 
       buildBarGraph(graphData, 'overall-performance')
     },
+
+    buildOverallOandaPerformanceGraph(performance) {
+      const graphData = [
+        {
+          labeL 
+        }
+      ]
+    }
   },
 
   watch: {
@@ -304,7 +340,7 @@ export default {
       this.uploadTrades()
     },
 
-    dateFilter() {
+    filteredDate() {
       this.uploadTrades()
     },
 
@@ -321,6 +357,11 @@ export default {
     overallTradePerformanceData(value) {
       clearBarGraph('overall-performance')
       buildBarGraph(value, 'overall-performance')
+    },
+
+    oandaTradeStats(value) {
+      clearPieGraph('OandaOverallPerformance')
+      buildPieGraph('OandaOverallPerformance', value.totalPipsGained, value.totalPipsLost)
     },
 
     tradeStats(value) {

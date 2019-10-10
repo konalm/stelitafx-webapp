@@ -7,7 +7,8 @@ import Home from '@/components/Home.vue';
 import Currency from '@/components/Currency.vue';
 import PrototypeCurrencyAnalysis from '@/components/PrototypeCurrencyAnalysis';
 import Monitor from '@/components/Monitor'
-import TradeAnalysis from './components/TradeAnalysis';
+import TradeAnalysis from '@/components/TradeAnalysis';
+import Charting from '@/components/Charting';
 
 Vue.use(Router);
 
@@ -53,6 +54,11 @@ export default new Router({
       path: '/monitor',
       name: 'Monitor',
       component: Monitor
+    },
+    {
+      path: '/charting',
+      name: 'Charting',
+      component: Charting
     }
   ],
 

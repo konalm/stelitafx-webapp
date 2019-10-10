@@ -3,9 +3,10 @@
     <b-card v-bind:title="currencyRate.abbrev">
       <div class="row mt-4">
         <div class="col">
-          <router-link :to="{name: 'Currency',
-            params: { abbrev: currencyRate.base_currency }}"
-          >
+          <router-link :to="{
+            name: 'Currency',
+            params: { abbrev: currencyRate.base_currency }
+          }">
             <b-button variant="primary" class="px-4">View</b-button>
           </router-link>
         </div>
@@ -13,7 +14,6 @@
     </b-card>
   </b-col>
 </template>
-
 
 
 <script>
