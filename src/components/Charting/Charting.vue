@@ -3,22 +3,21 @@
     <b-container>
       <b-row>
         <b-col cols="2">
-          {{ currency }}
-          {{ prototype }}
-          {{ timeInterval }}
           <b-form-select v-model="currency" :options="currencyOptions" />
-          <b-form-select v-model.number="prototype" :options="prototypeOptions" 
-            class="mt-2" 
-          />
-          <b-form-select v-model.number="timeInterval" :options="timeIntervalOptions" 
-            class="mt-2" 
-          />
-
-          <b-button variant="primary" class="mt-4 w-100"> Update graph </b-button>
         </b-col>
 
-        <b-col cols="10">
-          <chart :currency="currency" :prototype="prototype" :interval="timeInterval" />  
+        <b-col cols="2">
+          <b-form-select v-model.number="prototype" :options="prototypeOptions" />
+        </b-col>
+
+        <b-col cols="2">
+          <b-form-select v-model.number="timeInterval" :options="timeIntervalOptions" />
+        </b-col>
+      </b-row>
+
+      <b-row>
+        <b-col>
+          <chart :currency="currency" :prototype="prototype" :timeInterval="timeInterval" />  
         </b-col>
       </b-row>
     </b-container>
@@ -41,7 +40,7 @@ export default {
       currencyOptions: [],
       prototypeOptions: [],
       timeIntervalOptions: [],
-      currency: '',
+      currency: 'GBP',
       prototype: 1,
       timeInterval: 15
     }
@@ -54,18 +53,12 @@ export default {
   },
 
   methods: {
-    uploadCurrencyRateWMAData() {
-      console.log('upload currency rate WMA data')
-
-
-    },
-
     uploadCurrencyOptions() {
       this.$store.dispatch('currency/getCurrencyAbbrevs')
         .then(res => {
           this.currencyOptions = res.map(x => ({
             text: x.baseAbbrev,
-            value: x.pairAbbrev
+            value: x.baseAbbrev
           }))
           this.currency = this.currencyOptions[0].value
         })

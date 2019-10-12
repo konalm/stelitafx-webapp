@@ -8,6 +8,7 @@ import tradeModule from './trade';
 import timeIntervalModule from './timeInterval';
 import currencyModule from './currency';
 import prototypeModule from './prototype';
+import currencyRateModule from './currencyRate';
 
 export default new Vuex.Store({
   strict: true,
@@ -16,6 +17,7 @@ export default new Vuex.Store({
     trade: tradeModule,
     timeInterval: timeIntervalModule,
     currency: currencyModule,
-    prototype: prototypeModule
+    prototype: prototypeModule,
+    currencyRate: currencyRateModule
   }
 })

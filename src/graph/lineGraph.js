@@ -105,8 +105,8 @@ const make_y_gridlines = (y) => d3.axisLeft(y).ticks(20)
 /**
  *
  */
-const buildSvg = (domClassName, width, height) =>
-  d3.select(`.${domClassName}`)
+const buildSvg = (domId, width, height) =>
+  d3.select(`#${domId}`)
     .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
@@ -135,6 +135,6 @@ const appendLineToGraph = (data, svg, valueLine, colour, width) => {
       .style('stroke-width', width);
 }
 
-export const clearLineGraph = (domClassName) => {
-  d3.select(`.${domClassName}`).select("svg").remove()
+export const clearLineGraph = (domId) => {
+  d3.select(`#${domId}`).select("svg").remove()
 }
