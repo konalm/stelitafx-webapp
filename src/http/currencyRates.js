@@ -1,5 +1,44 @@
 import apiHttpRequest from './apiRequest.js';
 
+export const getCurrencyRateSourceOptions = async () => {
+  let response
+  try {
+    response = await apiHttpRequest.get('currency-rate-sources')
+  } catch (e) {
+    throw new Error(e)
+  }
+
+  return response.data.map(x => ({
+    text: x,
+    value: x
+  }))
+}
+
+export const getMultiRates = async () => {
+  let response;
+  try {
+    response = await apiHttpRequest.get('multi-rates')
+  } catch (e) {
+    throw new Error(e)
+  }
+
+  return response.data
+}
+/**
+ * 
+ */
+export const getWMADatapointsFromDate = async (currency, interval, startDate) => {
+  let response;
+  try {
+    response = await apiHttpRequest.get(`wma-data-points-from-date/${currency}/interval/${interval}/start-date/${startDate}`)
+  } catch (e) {
+    throw new Error(e)
+  }
+
+  return response.data
+}
+
+
 /**
  *
  */

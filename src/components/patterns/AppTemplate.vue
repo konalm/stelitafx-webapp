@@ -24,21 +24,38 @@
           <b-nav-item>
             <router-link :to="{name: 'Charting'}"> Charting </router-link>
           </b-nav-item>
+
+          <b-nav-item>
+            <router-link :to="{name: 'RatesChart'}"> Rates Chart </router-link>
+          </b-nav-item>
         </b-navbar-nav>
       </b-collapse>
     </b-navbar>
 
-    <div class="container mt-4">
+    <b-container class="mt-4" v-bind:class="className">
       <slot></slot>
-    </div>
+    </b-container>
   </div>
 </template>
 
 
 <script>
 export default {
+  props: {
+    className: {
+      type: String,
+      required: false
+    }
+  },
+
   data() {
     return {}
   },
 }
 </script>
+
+<style lang="scss" scoped>
+.container__full-width {
+  max-width: 100vw;
+}
+</style>

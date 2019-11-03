@@ -93,7 +93,7 @@ import { formatDateTime } from '@/services/utils';
 export default {
   props: {
     tradeId: {
-      type: String, 
+      type: [Number, String], 
       required: true
     },
     trade: {

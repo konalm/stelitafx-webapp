@@ -5,11 +5,11 @@ const currencyRateStore = {
   
   actions: {
     async getCurrencyRateWmaData({}, payload) {
-      const {currency, timeInterval, count, offset} = payload
+      const {currency, timeInterval, count, offset, currencyRateSrc} = payload
 
       let response
       try {
-        const path = `currency/${currency}/int/${timeInterval}/wma-data-points/${count}?offset=${offset}`
+        const path = `currency/${currency}/int/${timeInterval}/wma-data-points/${count}?offset=${offset}&currencyRateSource=${currencyRateSrc}`
         response = await getHttpRequest(path)
       } catch (e) {
         console.error('Failed to get currency rate and WMA data')

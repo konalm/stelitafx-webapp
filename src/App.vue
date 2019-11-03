@@ -19,6 +19,16 @@ export default {
   color: #2c3e50;
 }
 
+.small-font {
+  font-size: 12px;
+}
+
+.slim {
+  height: 25px;
+  padding: 4px;
+  font-size: 12px;
+}
+
 .Gain, .Profit, .gained {
   fill: #28a745;
 }

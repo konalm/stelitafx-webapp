@@ -2,13 +2,13 @@ import Moment from 'moment';
 const parseTime = d3.timeParse('%Y-%m-%d %H:%M');
 
 // set the dimensions and margins of the graph
-const margin = {top: 20, right: 20, bottom: 30, left: 50};
+const margin = {top: 20, right: 20, bottom: 30, left: 40};
 
 
 /**
  *
  */
-export const buildLineGraph = (data, domClassName, _width, _height) => {
+export const buildLineGraph = (data, domClassName, _width, _height, xTicks = 50) => {
   const width = _width - margin.left - margin.right;
   const height = _height - margin.top - margin.bottom;
 
@@ -79,7 +79,7 @@ export const buildLineGraph = (data, domClassName, _width, _height) => {
   svg.append("g")
       .attr("class", "x-grid")
       .attr("transform", "translate(0," + height + ")")
-      .call(make_x_gridlines(x)
+      .call(make_x_gridlines(x, xTicks)
           .tickSize(-height)
           .tickFormat("")
       )
@@ -94,8 +94,8 @@ export const buildLineGraph = (data, domClassName, _width, _height) => {
 }
 
 // gridlines in x axis function
-const make_x_gridlines = (x) => {
-  return d3.axisBottom(x).ticks(50)
+const make_x_gridlines = (x, ticks) => {
+  return d3.axisBottom(x).ticks(ticks)
 }
 
 

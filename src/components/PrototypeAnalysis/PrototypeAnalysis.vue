@@ -22,7 +22,6 @@
         <b-card>
           <p>Total trades {{ amountOfTrades }}</p>
 
-          <!-- <p class="small"> -->
           <ul class="flex">
             <li class="ml-2" v-for="currency in currencies" :key="currency">
               <span class="small">

@@ -4,7 +4,7 @@ const currencyStore = {
   namespaced: true,
 
   actions: {
-    async getCurrencyAbbrevs () {
+    async getCurrencyAbbrevs() {
       let response
       try {
         const url = "major-currencypair-abbrevs";

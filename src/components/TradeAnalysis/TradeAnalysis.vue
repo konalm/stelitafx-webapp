@@ -106,7 +106,7 @@
     <!-- Line Graph -->
     <b-row class="mb-3">
       <b-col>
-        <div class="line-graph"></div>
+        <div id="tradeAnalysisLineGraph"></div>
       </b-col>
     </b-row>
 
@@ -224,7 +224,7 @@ export default {
         {
           key: 'rate',
           colour: 'black',
-          width: 1,
+          width: 2,
         }, {
           key: 'openRate',
           colour: 'rgba(0, 122, 255, 1.0)',
@@ -254,6 +254,7 @@ export default {
       if (protoNo === 5 || protoNo === 51) details = details.concat(this.wmaDetails5And15)
       if (protoNo === 4 || protoNo === 6) details = details.concat(this.wmaDetails5And12)
 
+      
       return { dataPoints, details };
     },
 
@@ -335,6 +336,9 @@ export default {
     },
 
     tradeOpenIndex() {
+      console.log('trade open index ???')
+      console.log(`trade open date ... ${this.trade.openDate}`)
+
       const wmaData = [...this.wmaData];
       wmaData.sort((a, b) => new Date(a.date) - new Date(b.date));
       const i =  wmaData.findIndex(compareHourAndMin, this.trade.openDate);
@@ -388,9 +392,7 @@ export default {
   },
 
   methods: {
-    calculatePip(x, y) {
-      return pipCalculator(x, y );
-    },
+    calculatePip(x, y) { return pipCalculator(x, y ) },
 
     goToPrevTrade() {
       const path = `prev-trade/${this.tradeId}`
@@ -436,7 +438,7 @@ export default {
           this.wmaData = res;
         })
         .catch(err => {
-          throw new Error(`uploading WMA data for Alog currency trade: ${err}`);
+          throw new Error(`uploading WMA data for Algo currency trade: ${err}`);
         })
     },
 
@@ -493,8 +495,8 @@ export default {
     },
 
     formattedDataForLineGraph(value) {
-      clearLineGraph('line-graph')
-      buildLineGraph(value, 'line-graph', 1310, 500);
+      clearLineGraph('tradeAnalysisLineGraph')
+      buildLineGraph(value, 'tradeAnalysisLineGraph', 1310, 500);
       this.addTradeOpenClassToWMAGraph()
       this.addTradeCloseClassToWMAGraph()
     },

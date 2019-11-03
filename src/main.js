@@ -7,7 +7,6 @@ import BootstrapVue from 'bootstrap-vue'
 import router from './router';
 import store from './store';
 
-// import TimeInterval from '@/components/patterns/TimeInterval';
 
 Vue.config.productionTip = false
 Vue.use(BootstrapVue)
@@ -17,9 +16,7 @@ Vue.use(Datepicker)
 Vue.use(Timepicker)
 Vue.use(Field)
 
-// Vue.component(
-//   TimeInterval,
-// )
+
 
 /* eslint-disable no-new */
 new Vue({

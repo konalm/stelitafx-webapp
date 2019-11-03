@@ -7,5 +7,5 @@ const config = require('../config/index')
  */
 module.exports = axios.create({
   baseURL: `${config.apiUrl}/`,
-  timeout: 1000,
+  // timeout: 1000,
 });

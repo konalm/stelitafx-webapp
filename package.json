@@ -5,6 +5,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "deploy": "vue-cli-service build && scp -r dist/* root@138.68.167.173:/var/www/stelita-fx",
+    "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
@@ -17,7 +18,9 @@
     "moment": "^2.24.0",
     "node-sass": "^4.12.0",
     "vue": "^2.6.10",
+    "vue-bootstrap-slider": "^2.1.8",
     "vue-class-component": "^7.1.0",
+    "vue-color": "^2.7.0",
     "vue-router": "^3.0.6",
     "vuex": "^3.1.1"
   },
@@ -28,6 +31,7 @@
     "babel-eslint": "^10.0.1",
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
+    "num-words": "^1.0.1",
     "sass-loader": "^7.1.0",
     "vue-template-compiler": "^2.6.10"
   },

@@ -8,6 +8,10 @@
       <b-col cols lg="3">
         <time-interval v-model="timeInterval" />
       </b-col>
+
+      <b-col cols lg="3">
+        <b-form-select v-model="currencyRateSource" :options="currencyRateSourceOptions" />
+      </b-col>
     </b-row>
 
     <b-row> <b-col> <hr /> </b-col> </b-row>
@@ -17,6 +21,7 @@
         :timeInterval="timeInterval"
         :proto="proto"
         :filteredDate="filteredDate"
+        :currencyRateSource="currencyRateSource"
       />
     </b-row>
   </app-template>
@@ -27,6 +32,7 @@
 import AppTemplate from '@/components/patterns/AppTemplate';
 import { algosHttpGetRequest } from '@/http/algos';
 import { getHttpRequest } from '@/http/apiRequestV2';
+import { getCurrencyRateSourceOptions } from '@/http/currencyRates';
 import ProtoItem from './children/ProtoItem';
 import DateFilter from '@/components/patterns/DateFilter'
 import TimeInterval from '@/components/patterns/TimeInterval'
@@ -44,17 +50,20 @@ export default {
     return {
       algos: [],
       timeInterval: 1, 
-      filteredDate: beginningOfDay(0)
+      filteredDate: beginningOfDay(0),
+      currencyRateSource: '',
+      currencyRateSourceOptions: []
     }
   },
 
   beforeMount() {
     this.timeInterval = parseInt(this.$route.params.interval)
     this.uploadPrototypes()
+    this.uploadCurrencyRateSourceOptions()
   },
 
   methods: {
-    async uploadPrototypes() {
+    uploadPrototypes() {
       algosHttpGetRequest()
         .then(res => {
           this.algos = res;
@@ -63,6 +72,14 @@ export default {
           console.error('Failed to upload Prototypes')
         })
     },
+
+    uploadCurrencyRateSourceOptions() {
+      getCurrencyRateSourceOptions()
+        .then(res => {
+          this.currencyRateSourceOptions = res
+          this.currencyRateSource = res[0].value
+        })
+    }
   },
 
   watch: {

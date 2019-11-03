@@ -1,7 +1,21 @@
 import moment from 'moment';
+import numberToWord from 'num-words';
+
+
+export const numberToWMAStringValue = (length) => {
+  const lengthAsWord = numberToWord(length)
+
+  let formattedLengthAsWord = lengthAsWord.replace(/(\w+)(?:\s+|$)/g, (_, word) =>
+    word.charAt(0).toUpperCase() + word.substr(1)
+  )
+  formattedLengthAsWord = formattedLengthAsWord.charAt(0).toLowerCase() +
+    formattedLengthAsWord.slice(1)
+  
+  return `${formattedLengthAsWord}WMA`
+}
 
 /**
- * Compare hour and min of dates to find indx in array
+ * Compare hour and min of dates to find index in array
  */
 export function compareHourAndMin (item) {
   const itemDate = new Date(item.date);

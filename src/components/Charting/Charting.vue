@@ -1,26 +1,26 @@
 <template>
-  <app-template>
-    <b-container>
-      <b-row>
-        <b-col cols="2">
-          <b-form-select v-model="currency" :options="currencyOptions" />
-        </b-col>
+  <app-template :className="'container__full-width'">
+    <b-row>
+      <b-col cols="2">
+        <b-form-select v-model="currency" :options="currencyOptions" />
+      </b-col>
 
-        <b-col cols="2">
-          <b-form-select v-model.number="prototype" :options="prototypeOptions" />
-        </b-col>
+      <b-col cols="2">
+        <b-form-select v-model.number="timeInterval" :options="timeIntervalOptions" />
+      </b-col>
 
-        <b-col cols="2">
-          <b-form-select v-model.number="timeInterval" :options="timeIntervalOptions" />
-        </b-col>
-      </b-row>
+      <b-col cols="2">
+        <select-currency-rate-src v-model="currencyRateSrc"  />
+      </b-col>
+    </b-row>
 
-      <b-row>
-        <b-col>
-          <chart :currency="currency" :prototype="prototype" :timeInterval="timeInterval" />  
-        </b-col>
-      </b-row>
-    </b-container>
+    <b-row>
+      <b-col>
+        <chart :currency="currency" :timeInterval="timeInterval" 
+          :currencyRateSrc="currencyRateSrc"
+        />  
+      </b-col>
+    </b-row>
   </app-template>
 </template>
 
@@ -28,11 +28,13 @@
 <script>
 import AppTemplate from '@/components/patterns/AppTemplate';
 import Chart from '@/components/patterns/Chart';
+import SelectCurrencyRateSrc from '@/components/patterns/SelectCurrencyRateSrc';
 
 export default {
   components: {
     AppTemplate,
-    Chart
+    Chart,
+    SelectCurrencyRateSrc
   },
 
   data() {
@@ -42,7 +44,8 @@ export default {
       timeIntervalOptions: [],
       currency: 'GBP',
       prototype: 1,
-      timeInterval: 15
+      timeInterval: 15,
+      currencyRateSrc: ''
     }
   },
 
@@ -89,3 +92,10 @@ export default {
 }
 </script>
 
+
+<style lang="scss" scoped>
+.container {
+  max-width: 100vw;
+  border: 1px solid blue;
+}
+</style>

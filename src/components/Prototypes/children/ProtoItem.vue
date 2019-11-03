@@ -69,6 +69,10 @@ export default {
     filteredDate: {
       type: [Date, String],
       required: true
+    },
+    currencyRateSource: {
+      type: String,
+      required: false
     }
   },
 
@@ -105,13 +109,15 @@ export default {
   methods: {
     async uploadTrades() {
       this.loading = true
-
+      
+      let params = {}
       let path = `/protos/${this.proto.prototype_no}/intervals/${this.timeInterval}/trades`
-      if (this.filteredDate) path += `?date=${this.filteredDate}`
+      if (this.filteredDate) params.date= this.filteredDate 
+      params.currencyRateSource = this.currencyRateSource
 
       this.trades = []
       try {
-        this.trades = await getHttpRequest(path)
+        this.trades = await getHttpRequest(path, params)
       } catch (err) {
         console.error(`Failed to upload trades for proto ${this.proto.prototype_no}`)
       } finally {
@@ -136,6 +142,11 @@ export default {
     },
 
     timeInterval() {
+      this.uploadTrades()
+    },
+
+    currencyRateSource() {
+      console.log('proto item, watch currency rate src ?')
       this.uploadTrades()
     }
   }
