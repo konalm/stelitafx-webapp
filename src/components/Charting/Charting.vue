@@ -1,5 +1,5 @@
 <template>
-  <app-template :className="'container__full-width'">
+  <app-template className="container__full-width">
     <b-row>
       <b-col cols="2">
         <b-form-select v-model="currency" :options="currencyOptions" />
@@ -13,6 +13,12 @@
         <select-currency-rate-src v-model="currencyRateSrc"  />
       </b-col>
     </b-row>
+
+    <!-- <b-row>
+      <b-col>  
+        <stochastic-line-graph />
+      </b-col>
+    </b-row> -->
 
     <b-row>
       <b-col>
@@ -29,12 +35,14 @@
 import AppTemplate from '@/components/patterns/AppTemplate';
 import Chart from '@/components/patterns/Chart';
 import SelectCurrencyRateSrc from '@/components/patterns/SelectCurrencyRateSrc';
+// import StochasticLineGraph from './child/StochasticLineGraph';
 
 export default {
   components: {
     AppTemplate,
     Chart,
-    SelectCurrencyRateSrc
+    SelectCurrencyRateSrc,
+    // StochasticLineGraph
   },
 
   data() {

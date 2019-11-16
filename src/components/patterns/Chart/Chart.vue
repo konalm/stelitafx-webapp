@@ -1,6 +1,14 @@
 <template>
   <section>
     <b-row>
+      <stochastic-line-graph :abbrev="currency" :interval="timeInterval" 
+        :count="dataPointCount" 
+        :currencyRateSrc="currencyRateSrc" 
+        :offset="offset" 
+      />
+    </b-row>
+
+    <b-row>
       <div v-bind:id="domClassName"></div>
       <b-spinner variant="primary" label="Spinning" v-if="loading" />
     </b-row>
@@ -110,12 +118,14 @@ import { beginningOfDay, formatDateTime } from '@/services/utils';
 import pipCalculator from '@/services/pipCalculator';
 import WmaDraw from './child/WMADraw';
 import Lab from './child/Lab';
+import StochasticLineGraph from '@/components/Charting/child/StochasticLineGraph';
 
 
 export default {
   components: {
     WmaDraw,
     Lab,
+    StochasticLineGraph
   },
 
   props: {
@@ -342,9 +352,11 @@ export default {
         offset: this.offset,
         currencyRateSrc: this.currencyRateSrc || ''
       }
+
       this.$store.dispatch('currencyRate/getCurrencyRateWmaData', payload)
         .then(res => {
           this.wmaDataPoints = res;
+          console.log(res.length)
         })
         .finally(() => this.loading = false)
     },

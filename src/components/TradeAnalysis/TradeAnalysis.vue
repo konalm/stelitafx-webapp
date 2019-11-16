@@ -103,34 +103,15 @@
       </b-col>
     </b-row> -->
 
-    <!-- Line Graph -->
-    <b-row class="mb-3">
-      <b-col>
-        <div id="tradeAnalysisLineGraph"></div>
-      </b-col>
-    </b-row>
-
-    <b-row class="mt-3">
-      <b-col col lg="2" class="mt-4">
-        <date-filter v-model="dateFilter" />
-      </b-col>
-
-      <b-col col lg="2" class="mt-4"> {{ trade.timeInterval }} </b-col>
-    </b-row>
-
-    <b-row>
-      <b-col>
-        <!-- all trades here & filter -->
-        <div class="trades__container">
-          <trade v-for="trade in trades" :key="trade.id" :trade="trade"
-            :summary="true"
-            :inView="trade.id === tradeId"
-            :prototypeNo="protoNo"
-            class="item"
-          />
-        </div>
-      </b-col>
-    </b-row>
+    <line-graph :trade="trade" :wmaData="wmaData" :protoNo="protoNo"
+      :tradeOpenIndex="tradeOpenIndex"
+      :tradeCloseIndex="tradeCloseIndex"
+    />
+ 
+    <other-trades :tradeId="tradeId" :trade="trade" :protoNo="protoNo" 
+      :timeInterval="timeInterval" 
+      :currency="currency" 
+    />
   </app-template>
 </template>
 
@@ -140,12 +121,14 @@ import moment from 'moment';
 import AppTemplate from '@/components/patterns/AppTemplate';
 import OandaAnalysis from './children/OandaAnalysis';
 import { getHttpRequest } from '@/http/apiRequestV2';
-import { buildLineGraph, clearLineGraph } from '@/graph/lineGraph';
+import { tradeViewed } from '@/http/trade';
 import { compareHourAndMin, durationOfTrade } from '@/services/utils';
 import pipCalculator from '@/services/pipCalculator';
 import DateFilter from '@/components/patterns/DateFilter';
 import Trade from '@/components/patterns/TradeSummaryCard';
 import { mapGetters, mapActions } from 'vuex';
+import LineGraph from './children/LineGraph';
+import OtherTrades from './children/OtherTrades';
 
 
 export default {
@@ -153,7 +136,9 @@ export default {
     AppTemplate,
     DateFilter,
     Trade,
-    OandaAnalysis
+    OandaAnalysis,
+    OtherTrades,
+    LineGraph
   },
 
   data() {
@@ -176,7 +161,6 @@ export default {
 
   beforeMount() {
     this.uploadTrade();
-    this.uploadTrades();
   },
 
   mounted() {
@@ -200,121 +184,7 @@ export default {
 
     currency() { return this.$route.params.currency; },
 
-    tradeId() { return this.$route.params.tradeId; },
-
-    /**
-     *
-     */
-    formattedDataForLineGraph() {
-     if (!this.wmaData.length) return 
-     if (!this.trade) return
-
-      const dataPoints = this.wmaData.map((dataPoint) => ({
-        date: dataPoint.date,
-        rate: dataPoint.rate,
-        openRate: this.trade.openRate,
-        closeRate: this.trade.closeRate,
-        fiveWMA: dataPoint.WMAs["5"],
-        twelveWMA: dataPoint.WMAs["12"],
-        fifteenWMA: dataPoint.WMAs["15"],
-        thirtySixWMA: dataPoint.WMAs["36"],
-        twoHundredWMA: dataPoint.WMAs["200"]
-      }));
-      let details = [
-        {
-          key: 'rate',
-          colour: 'black',
-          width: 2,
-        }, {
-          key: 'openRate',
-          colour: 'rgba(0, 122, 255, 1.0)',
-          width: 1,
-        }, {
-          key: 'closeRate',
-          colour: 'rgba(215, 46, 61, 1.0)',
-          width: 1,
-        }
-      ];
-
-      const protoNo = parseInt(this.protoNo);
-
-      if (
-        protoNo === 1 || 
-        protoNo === 2 || 
-        protoNo === 3 || 
-        protoNo === 7 ||
-        protoNo === 71 ||
-        protoNo === 72 ||
-        protoNo === 73 ||
-        protoNo === 74
-      ) {
-        details = details.concat(this.wmaDetailsForProtoOneAndTwo)
-      }
-
-      if (protoNo === 5 || protoNo === 51) details = details.concat(this.wmaDetails5And15)
-      if (protoNo === 4 || protoNo === 6) details = details.concat(this.wmaDetails5And12)
-
-      
-      return { dataPoints, details };
-    },
-
-    /**
-     *
-     */
-    wmaDetailsForProtoOneAndTwo() {
-      return [
-        {
-          key: 'twelveWMA',
-          colour: 'blue',
-          width: 1
-        },
-        {
-          key: 'thirtySixWMA',
-          colour: 'red',
-          width: 1
-        }
-      ];
-    },
-
-    wmaDetails5And15() {
-      return [
-        {
-          key: 'fiveWMA',
-          colour: 'blue',
-          width: 1
-        },
-        {
-          key: 'fifteenWMA',
-          colour: 'red',
-          width: 1
-        }
-      ]
-    },
-
-    wmaDetails5And12() {
-      return [
-        {
-          key: 'fiveWMA',
-          colour: 'blue',
-          width: 1
-        },
-        {
-          key: 'twelveWMA',
-          colour: 'red',
-          width: 1
-        }
-      ]
-    },
-
-    wmaDetails200() {
-      return [
-        {
-          key: 'twoHundredWMA',
-          colour: 'green',
-          width: 200
-        }
-      ]
-    },
+    tradeId() { return parseInt(this.$route.params.tradeId) },
 
     pipMovement() {
       const wmaData = [...this.wmaData];
@@ -336,13 +206,9 @@ export default {
     },
 
     tradeOpenIndex() {
-      console.log('trade open index ???')
-      console.log(`trade open date ... ${this.trade.openDate}`)
-
       const wmaData = [...this.wmaData];
       wmaData.sort((a, b) => new Date(a.date) - new Date(b.date));
       const i =  wmaData.findIndex(compareHourAndMin, this.trade.openDate);
-      console.log(`trade open index --> ${i}`)
       return i
     },
 
@@ -461,56 +327,14 @@ export default {
       return moment(date).format('HH:mm')
     },
 
-     async uploadTrades() {
-      let path = `/protos/${this.protoNo}/intervals/${this.timeInterval}/currency/${this.currency}/trades`
-      if (this.filterDate) path += `?date=${this.filterDate}`
-
-      this.trades = await getHttpRequest(path)
-    },
-
-    addTradeOpenClassToWMAGraph() {
-      if (this.tradeOpenIndex < 0) return 
-
-      const xGridTicks = document.querySelectorAll(".x-grid .tick");
-      if (!xGridTicks) return
-      if (xGridTicks.length < this.tradeOpenIndex) return
-
-      xGridTicks[this.tradeOpenIndex].classList.add("trade-open")
-    },
-
-    addTradeCloseClassToWMAGraph() {
-      if (this.tradeCloseIndex < 0) return
-
-      const xGridTicks = document.querySelectorAll(".x-grid .tick");
-      if (!xGridTicks) return
-      if (xGridTicks.length < this.tradeCloseIndex) return
-
-      xGridTicks[this.tradeCloseIndex].classList.add("trade-close")
+    setTradeViewed() {
+      tradeViewed(this.tradeId)
     }
   },
 
   watch: {
-    filterDate() {
-      this.uploadTrades()
-    },
-
-    formattedDataForLineGraph(value) {
-      clearLineGraph('tradeAnalysisLineGraph')
-      buildLineGraph(value, 'tradeAnalysisLineGraph', 1310, 500);
-      this.addTradeOpenClassToWMAGraph()
-      this.addTradeCloseClassToWMAGraph()
-    },
-
-    tradeOpenIndex() {
-      this.addTradeOpenClassToWMAGraph()
-    },
-
-    tradeCloseIndex() {
-     this.addTradeCloseClassToWMAGraph()
-    },
-
-    timeInterval() {
-      this.uploadTrades()
+    trade(value) {
+      if (!value.viewed) this.setTradeViewed()
     },
 
     /* reload trade & WMA data when routed to another trade */
@@ -519,10 +343,6 @@ export default {
       this.uploadWMAData()
       window.scrollTo(0,0)
     },
-
-    filterDate () {
-      console.log('watching filter date from the store ???')
-    }
   }
 }
 </script>
