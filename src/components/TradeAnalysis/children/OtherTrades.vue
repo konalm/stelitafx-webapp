@@ -13,6 +13,7 @@
             :summary="true"
             :inView="trade.id === tradeId"
             :prototypeNo="protoNo"
+            :interval="timeInterval"
             class="item"
           />
         </div>
@@ -51,7 +52,7 @@ export default {
     },
 
     timeInterval: {
-      type: Number,
+      type: [Number, String],
       required: true
     },
 
@@ -83,8 +84,8 @@ export default {
         .then(res => {
           this.trades = res
         })
-        .catch(err => {
-          console.error('Failed to upload other trades')
+        .catch(() => {
+          throw new Error('Failed to upload other trades')
         })
     },
   },

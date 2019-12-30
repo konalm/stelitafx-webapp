@@ -8,6 +8,7 @@ import router from './router';
 import store from './store';
 
 
+
 Vue.config.productionTip = false
 Vue.use(BootstrapVue)
 
@@ -21,9 +22,9 @@ Vue.use(Field)
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
-  // components: {
-  //   'time-interval': TimeInterval
-  // },
+  mounted() {
+    store.dispatch('algorithm/uploadPublishedAlgorithms')
+  },
   router,
   store,
   components: { App },

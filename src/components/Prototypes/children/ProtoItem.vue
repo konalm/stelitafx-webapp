@@ -5,20 +5,30 @@
       <p><small>{{ proto.description }}</small></p>
 
       <!-- pie graph -->
-      <div v-bind:id="'pieGraph' + proto.prototype_no" class="my-3 text-center" 
+      <div v-bind:id="'pieGraph' + proto.prototype_no" class="mt-3 text-center" 
         v-bind:class="{'d-none': !trades.length}"
       ></div>
 
-      <section v-if="!loading" class="text-center">
+      <section v-if="!loading" class="text-center mt-1">
         <section v-if="trades.length">
           <p class="text-center">
             Gained: {{ pips.gained }} | Lost: {{ pips.lost }}
           </p>
 
-          <p class="lead text-center mt-3" 
+          <p class="lead text-center mt-1" 
             v-bind:class="{'text-success': gainedPercent >= 70}"
           >
             {{ gainedPercent }} %
+          </p>
+
+          <p class="mt-2">Total trades: {{ trades.length }}</p>
+          
+          <p>
+            W {{ winningTradeCount }} | L {{ losingTradeCount }}
+          </p>
+
+          <p v-bind:class="{'text-success': winningTradePercent >= 65}">
+            {{ winningTradePercent }} %
           </p>
         </section>
 
@@ -101,8 +111,22 @@ export default {
       return { gained, lost }
     },
 
+    winningTradeCount() {
+      const trades = this.trades.filter((trade) => ( trade.pips > 0 ))
+      return trades.length
+    },
+
+    losingTradeCount() {
+      const trades = this.trades.filter((trade) => ( trade.pips < 0 ))
+      return trades.length
+    },
+
     gainedPercent() {
       return calcPercentangeOfGain(this.pips.gained, this.pips.lost).toFixed(0)
+    },
+
+    winningTradePercent() {
+      return calcPercentangeOfGain(this.winningTradeCount, this.losingTradeCount).toFixed(0)
     }
   },
 
@@ -146,7 +170,6 @@ export default {
     },
 
     currencyRateSource() {
-      console.log('proto item, watch currency rate src ?')
       this.uploadTrades()
     }
   }

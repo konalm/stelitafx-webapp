@@ -68,23 +68,40 @@
         <b-col class="sm">
           <p>Gained: {{ tradeStats.totalPipsGained }} </p>
           <p>Lost: {{ tradeStats.totalPipsLoss }} </p>
+          <p> {{ tradeStats.totalPipsGained -  tradeStats.totalPipsLoss  }} </p>
           <div v-bind:id="'pieGraph' + protoNo" class="my-3 text-center"></div>
         </b-col>
       </b-row>
     </b-card>
 
     <!-- Oanda Overall Performance -->
-    <b-row class="my-4">
+    <b-row class="my-4" v-if="algorithmIsPublished">
       <b-col>
         <b-card>
           <p class="lead mb-3">Oanda</p>
 
           <p>gained {{ oandaTradeStats.totalPipsGained }}</p>
           <p>lost  {{ oandaTradeStats.totalPipsLost }}</p>
+          <p> {{ oandaMargin }}</p>
+          <p> total spread cost {{ oandaTradeStats.totalBidAskSpread }} </p>
+          <p> average spread cost {{ oandaTradeStats.avgBidAskSpread }} </p>
+          <p> {{ oandaMargin + oandaTradeStats.totalBidAskSpread  }} </p>
 
           <div id="pieGraphOandaOverallPerformance" class="mt-4"></div>
         </b-card>
       </b-col>
+
+      <b-col>
+        <b-card>
+          <oanda-analysis :trades="trades" />
+        </b-card>
+      </b-col>
+    </b-row>
+
+    <b-row>
+      <trade-analysis :trades="trades" :prototypeNo="proto.prototypeNo" 
+        :interval="timeInterval" 
+      />
     </b-row>
 
     <b-spinner variant="primary" label="Spinning" v-if="loading" />
@@ -98,18 +115,22 @@ import { getHttpRequest } from '@/http/apiRequestV2';
 import { buildBarGraph, clearBarGraph } from '@/graph/barGraph';
 import { buildPieGraph, clearPieGraph } from '@/graph/pieGraph';
 import ProtoCurrency from './children/ProtoCurrencyItem.vue';
+import OandaAnalysis from './children/OandaAnalysis.vue'
 import moment from 'moment';
 import DateFilter from '@/components/patterns/DateFilter.vue'
 import TimeInterval from '@/components/patterns/TimeInterval'
 import { mapGetters, mapActions } from 'vuex'
 import { beginningOfDay } from '@/services/utils';
+import TradeAnalysis from './children/TradeAnalysis'
 
 export default {
   components: {
     AppTemplate,
     ProtoCurrency,
+    OandaAnalysis,
     DateFilter,
-    TimeInterval
+    TimeInterval,
+    TradeAnalysis
   },
 
   data() {
@@ -131,7 +152,16 @@ export default {
       dateFilter: 'dateFilter/filterDate'
     }),
 
+    algorithmIsPublished() {
+      return this.$store.getters['algorithm/isPublished']({
+        prototypeNo: this.proto.prototypeNo,
+        timeInterval: this.timeInterval
+      })
+    },
+
     currencyTrades() {
+      console.log('currency trades')
+
       const currencyTrades = {
         GBP: [],
         EUR: [],
@@ -139,6 +169,9 @@ export default {
         AUD: []
       };
       const currencies = Object.keys(currencyTrades);
+
+      console.log('trades >>')
+      console.log(this.trades)
 
       currencies.forEach((currency) => {
         currencyTrades[currency] = this.trades.filter((trade) => 
@@ -186,9 +219,11 @@ export default {
     oandaTradeStats() {
       let totalPipsGained = 0
       let totalPipsLost = 0
+      let totalBidAskSpread = 0
 
       this.trades.forEach((t) => {
         const pips = t.oandaPips
+        totalBidAskSpread += t.oandaBidAskSpread
 
         if (pips > 0) totalPipsGained += pips
         if (pips < 0) totalPipsLost += pips * -1
@@ -196,8 +231,14 @@ export default {
 
       return {
         totalPipsGained,
-        totalPipsLost
+        totalPipsLost,
+        totalBidAskSpread,
+        avgBidAskSpread: (totalBidAskSpread / this.trades.length).toFixed(3)
       }
+    },
+
+    oandaMargin() {
+      return this.oandaTradeStats.totalPipsGained -  this.oandaTradeStats.totalPipsLost 
     },
 
     allTradesGraphData() {
@@ -283,7 +324,10 @@ export default {
       if (this.filteredDate) path += `?date=${this.filteredDate}`
       getHttpRequest(path)
         .then(res => {
-          if (!res) return
+          if (!res) {
+            this.trades = []
+            return
+          }
           this.trades = res
         })
         .finally(() => {

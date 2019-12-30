@@ -75,7 +75,7 @@
       </b-col>
     </b-row>
 
-    <oanda-analysis :tradeId="tradeId" :trade="trade" />
+    <oanda-analysis :tradeId="tradeId" :trade="trade" v-if="algorithmIsPublished" />
     
     <!-- <b-row>
       <b-col>
@@ -107,9 +107,17 @@
       :tradeOpenIndex="tradeOpenIndex"
       :tradeCloseIndex="tradeCloseIndex"
     />
- 
+
+    <stochastic-line-graph :abbrev="currency" :tradeId="tradeId" :tradeUUID="tradeUUID"
+      :prototypeNumber="protoNo"
+      :interval="timeInterval"
+      :tradeOpenIndex="tradeOpenIndex" 
+      :tradeCloseIndex="tradeCloseIndex"
+    />
+
     <other-trades :tradeId="tradeId" :trade="trade" :protoNo="protoNo" 
       :timeInterval="timeInterval" 
+      :interval="timeInterval"
       :currency="currency" 
     />
   </app-template>
@@ -124,21 +132,18 @@ import { getHttpRequest } from '@/http/apiRequestV2';
 import { tradeViewed } from '@/http/trade';
 import { compareHourAndMin, durationOfTrade } from '@/services/utils';
 import pipCalculator from '@/services/pipCalculator';
-import DateFilter from '@/components/patterns/DateFilter';
-import Trade from '@/components/patterns/TradeSummaryCard';
-import { mapGetters, mapActions } from 'vuex';
 import LineGraph from './children/LineGraph';
+import StochasticLineGraph from './children/StochasticLineGraph';
 import OtherTrades from './children/OtherTrades';
 
 
 export default {
   components: {
     AppTemplate,
-    DateFilter,
-    Trade,
     OandaAnalysis,
     OtherTrades,
-    LineGraph
+    LineGraph,
+    StochasticLineGraph
   },
 
   data() {
@@ -164,13 +169,20 @@ export default {
   },
 
   mounted() {
-    this.uploadWMAData();
+    this.uploadWMAData()
   },
 
   computed: {
+     algorithmIsPublished() {
+      return this.$store.getters['algorithm/isPublished']({
+        prototypeNo: this.protoNo,
+        timeInterval: this.timeInterval
+      })
+    },
+
     filterDate() { return this.$store.getters['dateFilter/filterDate'] },
 
-    timeInterval() { return this.$store.getters['timeInterval/interval'] },
+    timeInterval() { return this.$route.params.interval },
  
     tradePercentDiff() {
       const diff = this.trade.openRate - this.trade.closeRate;
@@ -184,7 +196,9 @@ export default {
 
     currency() { return this.$route.params.currency; },
 
-    tradeId() { return parseInt(this.$route.params.tradeId) },
+    tradeId() { return parseInt(this.$route.params.UUID) },
+
+    tradeUUID() { return this.$route.params.UUID },
 
     pipMovement() {
       const wmaData = [...this.wmaData];
@@ -298,7 +312,7 @@ export default {
     uploadWMAData() {
       this.wmaData = [];
 
-      const path = `wma/${this.currency}/trade/${this.tradeId}`;
+      const path = `/wma/${this.protoNo}/interval/${this.timeInterval}/${this.currency}/trade/${this.tradeUUID}`
       getHttpRequest(path)
         .then(res => {
           this.wmaData = res;
@@ -311,7 +325,7 @@ export default {
     uploadTrade() {
       this.trade = {};
 
-      const path = `proto/${this.protoNo}/currency/${this.currency}/trade/${this.tradeId}`
+      const path = `proto/${this.protoNo}/interval/${this.timeInterval}/currency/${this.currency}/trade/${this.tradeUUID}`
       getHttpRequest(path)
         .then(res => {
           this.trade = res;

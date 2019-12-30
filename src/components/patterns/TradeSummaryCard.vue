@@ -8,7 +8,7 @@
     <div class="row">
       <div class="col header p-2">
         {{ trade.id }}
-        
+  
         <p> 
           Paper   
           <span class="ml-2" v-bind:class="{
@@ -19,7 +19,7 @@
           </span>
         </p>
 
-        <p v-if="trade.account === 'demo'">
+        <!-- <p v-if="trade.account === 'demo'">
           Oanda 
           <span class="ml-2" v-bind:class="{
             'text-success': oandaPips > 0,
@@ -27,17 +27,16 @@
           }">
             <b>{{ oandaPips }}</b>
           </span>
-        </p>
+        </p> -->
 
-        <p>{{ duration }}</p>
+        <!-- <p>{{ duration }}</p> -->
 
         <p class="p-2" v-bind:class="{'bg-info': trade.account === 'demo'}">
-          Account: {{ trade.account }}
+          <!-- Account: {{ trade.account }} -->
         </p>
 
 
-
-        <p>TI {{ trade.timeInterval }}</p>
+        <!-- <p>TI {{ trade.timeInterval }}</p> -->
 
         <p v-if="!summary">{{ formatDate(trade.closeDate) }}
           {{ formatTime(trade.closeDate) }}
@@ -104,7 +103,15 @@ export default {
     },
     prototypeNo: {
       type: Number,
-      required: false
+      required: true
+    },
+    algorithmIsPublished: {
+      type: Boolean,
+      required: false,
+      default: false
+    },
+    interval: {
+      required: true
     }
   },
 
@@ -164,18 +171,24 @@ export default {
     formatTime(date) { return moment(date).format('HH:mm') },
 
     redirectToTrade() {
+
+      console.log('redirect to trade')
+      console.log(this.trade)
+
       this.$router.push({
         name: 'TradeAnalysis',
         params: {
           protoNo: this.prototypeNo,
-          interval: this.trade.timeInterval,
+          interval: this.interval,
           currency: this.currency,
-          tradeId: this.trade.id
+          UUID: this.trade.uuid
         }
       })
     },
 
     uploadOandaTradeTransactions() {
+      if (!this.algorithmIsPublished) return 
+
       const path = `/oanda-trade-transactions/${this.trade.id}`
       getHttpRequest(path)
         .then(res => {
@@ -185,6 +198,12 @@ export default {
         .catch(e => {
           console.error(`Failed to upload oanda trade transations: ${e}`)
         })
+    }
+  },
+
+  watch: {
+    algorithmIsPublished() {
+      this.uploadOandaTradeTransactions()
     }
   }
 }

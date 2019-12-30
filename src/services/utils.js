@@ -90,5 +90,15 @@ export const formatTime = (date) => {
 }
 
 export const formatDateTime = (date) => {
-  return moment(date).format('DD/MM/YYYY') + moment(date).format('HH:mm')
+  return moment(date).format('DD/MM/YYYY') + ' ' + moment(date).format('HH:mm')
+}
+
+export const secondsBetweenDates = (dateAS, dateBS) => {
+  const dateA = new Date(dateAS)
+  const dateB = new Date(dateBS)
+
+  const diff = dateA.getTime() - dateB.getTime();
+  const seconds = diff / 1000;
+  
+  return Math.abs(seconds)
 }

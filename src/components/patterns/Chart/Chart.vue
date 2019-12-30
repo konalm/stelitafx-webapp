@@ -70,6 +70,14 @@
               />
             </b-col>
           </b-row>
+
+          <b-row>
+            <b-col>
+              <b-form-select v-model="toDateRange" :options="toDateOptions" 
+                class="slim mt-4" 
+              />
+            </b-col>
+          </b-row>
         </b-card>
       </b-col>
 
@@ -161,6 +169,7 @@ export default {
       wmaData: [],
       algorithmn: {},
       specificDate: null,
+      toDateRange: null,
       verticalLineTicks: 50
     }
   },
@@ -182,13 +191,73 @@ export default {
   },
 
   computed: {
+    bollingerBands() {
+      let dataPoints = [...this.wmaDataPoints]
+      dataPoints = dataPoints.sort((a, b) => new Date(a.date) - new Date(b.date))
+      const length = 20
+
+      const bollingerBands = []
+      dataPoints.forEach((x, i) => {
+        if (i < length) {
+          const band = { 
+            date: x.date, 
+            bandMovingAverage: x.rate, 
+            upperBand: x.rate, 
+            lowerBand: x.rate 
+          }
+          bollingerBands.push(band)
+          return
+        }
+
+
+        const lastWMADataPointsForLength = [...this.wmaDataPoints].slice(i - length, i)
+        const lastRates = lastWMADataPointsForLength.map(x => x.rate)
+        const sumOfLastRates = lastRates.reduce((sum, x) => sum + x)
+        const twentyMA = sumOfLastRates / length
+
+        const squaredDeviations = []
+        lastRates.forEach((x) => {
+          let deviation = x > twentyMA ? x - twentyMA : twentyMA - x
+          const squaredDeviation = Math.sqrt(deviation)
+          squaredDeviations.push(deviation)
+        })
+
+        const sumOfSquaredDeviations = squaredDeviations.reduce((sum, x) => sum + x)
+
+        const deviation = sumOfSquaredDeviations / 20
+
+        const upperBand = twentyMA + (deviation * 2)
+        const lowerBand = twentyMA - (deviation * 2)
+
+        const band = {
+          date: x.date,
+          bandMovingAverage: twentyMA,
+          upperBand,
+          lowerBand
+        }
+        bollingerBands.push(band)
+      })
+
+      return bollingerBands
+    },
+
     dateOptions() {
       return [
         { text: '--- Select a date --- ', value: null },
         { text: 'Today', value: beginningOfDay(0) },
+        { text: 'Yesterday', value: beginningOfDay(1) },
         { text: 'Last 3 days', value: beginningOfDay(2) },
         { text: 'Past 7 days', value: beginningOfDay(6) },
         { text: 'Past 28 days', value: beginningOfDay(27) },
+      ]
+    },
+
+    toDateOptions() {
+      return [
+        { text: 'Now', value: null },
+        { text: 'Today', value: beginningOfDay(0) },
+        { text: 'Yesterday', value: beginningOfDay(1) },
+        { text: 'Day before yesterday', value: beginningOfDay(2) },
       ]
     },
 
@@ -230,30 +299,59 @@ export default {
             colour: x.colour,
             width: x.weight
           }))
-
-        dataPoints = this.dataPoints 
-      } else {
-        /* multi rate details */
-        details = [
+        const bollingerBandDetails = [
           {
-            key: 'oandaDemoRate' ,
-            colour: 'blue',
+            key: 'upperBand',
+            colour: '#00FFFF',
             width: 2
           },
           {
-            key: 'oandaFXAccountRate',
-            colour: 'red',
+            key: 'lowerBand',
+            colour: '#00FFFF',
             width: 2
           },
           {
-            key: 'fixerioRate',
-            colour: 'green',
+            key: 'bandMovingAverage',
+            colour: '#9b870c',
             width: 2
           }
         ]
+        details = details.concat(...bollingerBandDetails)
 
-        dataPoints = this.multiRates
+        console.log('details >>>')
+        console.log(details)
+        
+        dataPoints = [...this.dataPoints].map((x, i) => ({
+          ...x,
+          ...this.bollingerBands[i]
+        }))
+
+        console.log('data points >>>>>')
+        console.log(dataPoints)
+        console.log('------------------')
+
+        return {dataPoints, details}
       }
+
+      /* multi rate details */
+      details = [
+        {
+          key: 'oandaDemoRate' ,
+          colour: 'blue',
+          width: 2
+        },
+        {
+          key: 'oandaFXAccountRate',
+          colour: 'red',
+          width: 2
+        },
+        {
+          key: 'fixerioRate',
+          colour: 'green',
+          width: 2
+        }
+      ]
+      dataPoints = this.multiRates
 
       return {dataPoints, details}
     },
@@ -376,7 +474,8 @@ export default {
       getWMADatapointsFromDate(
         this.currency, 
         this.timeInterval, 
-        encodeURI(this.specificDate.toString())
+        this.specificDate,
+        this.toDateRange
       )
         .then(res => {
           this.wmaDataPoints = res
@@ -416,6 +515,10 @@ export default {
   watch: {
     specificDate() { this.uploadWMADataPointsFromStartDate() },
 
+    toDateRange() {
+      if (this.specificDate) this.uploadWMADataPointsFromStartDate()
+    },
+
     verticalLineTicks() { this.updateGraph() },
 
     lineGraphData(value) { 
@@ -433,7 +536,6 @@ export default {
     currency() { this.uploadWmaDataPoint() },
 
     currencyRateSrc() { 
-      console.log('watch currency rate src -> upload wma data points !')
       this.uploadWmaDataPoint()
     }
   }

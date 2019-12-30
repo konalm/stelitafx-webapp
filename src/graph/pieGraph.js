@@ -1,6 +1,6 @@
 // set the dimensions and margins of the graph
-const width = 150
-const height = 150
+const width = 75
+const height = 75
 const margin = 0
 
 // The radius of the pieplot is half the width or half the height (smallest one). I subtract a bit of margin.

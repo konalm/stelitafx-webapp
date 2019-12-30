@@ -42,7 +42,7 @@ export default new Router({
       component: PrototypeAnalysis
     },
     {
-      path: '/protos/:protoNo/intervals/:interval/currencies/:currency/trade-analysis/:tradeId',
+      path: '/protos/:protoNo/intervals/:interval/currencies/:currency/trade-analysis/:UUID',
       name: 'TradeAnalysis',
       component: TradeAnalysis
     },

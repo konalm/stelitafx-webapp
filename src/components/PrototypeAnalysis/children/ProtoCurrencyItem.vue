@@ -1,7 +1,6 @@
 <template>
   <b-col class="px-5">
     {{ currency }}
-
     <div class="bar-graph" v-bind:class="`${currency}-stats`"></div>
 
     <router-link :to="{name: 'PrototypeCurrencyAnalysis', params: {
@@ -56,6 +55,11 @@ export default {
       });
 
       return {gained, loss};
+    },
+
+    beforeMount() {
+      clearBarGraph(`${this.currency}-stats`);
+      buildBarGraph(value, `${this.currency}-stats`);
     },
 
     graphData() {

@@ -14,12 +14,6 @@
       </b-col>
     </b-row>
 
-    <!-- <b-row>
-      <b-col>  
-        <stochastic-line-graph />
-      </b-col>
-    </b-row> -->
-
     <b-row>
       <b-col>
         <chart :currency="currency" :timeInterval="timeInterval" 
@@ -35,14 +29,12 @@
 import AppTemplate from '@/components/patterns/AppTemplate';
 import Chart from '@/components/patterns/Chart';
 import SelectCurrencyRateSrc from '@/components/patterns/SelectCurrencyRateSrc';
-// import StochasticLineGraph from './child/StochasticLineGraph';
 
 export default {
   components: {
     AppTemplate,
     Chart,
     SelectCurrencyRateSrc,
-    // StochasticLineGraph
   },
 
   data() {

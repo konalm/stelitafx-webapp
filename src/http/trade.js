@@ -47,9 +47,23 @@ export const tradeViewed = async (id) => {
   try {
     response = await apiHttpRequest.get(url)
   } catch(e) {
-    console.error(`trade viewed http request failed: ${e}`)
-    return
+    return console.error(`trade viewed http request failed: ${e}`)
   }
 
   return response.data
 }
+
+
+export const getWMADataForTrade = async (prototype, interval, currency, tradeUUID) => {
+  const url = `/wma/${prototype}/interval/${interval}/${currency}/trade/${tradeUUID}`
+
+  let response
+  try {
+    response = await apiHttpRequest.get(url)
+  } catch (e) {
+    return console.error(`failed to get WMA data for trade: ${tradeUUID}`)
+  }
+
+  return response.data
+}
+

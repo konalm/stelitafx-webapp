@@ -9,6 +9,7 @@ import timeIntervalModule from './timeInterval';
 import currencyModule from './currency';
 import prototypeModule from './prototype';
 import currencyRateModule from './currencyRate';
+import algorithmModule from './algorithm';
 
 export default new Vuex.Store({
   strict: true,
@@ -18,6 +19,7 @@ export default new Vuex.Store({
     timeInterval: timeIntervalModule,
     currency: currencyModule,
     prototype: prototypeModule,
-    currencyRate: currencyRateModule
+    currencyRate: currencyRateModule,
+    algorithm: algorithmModule
   }
 })

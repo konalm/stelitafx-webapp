@@ -39,7 +39,7 @@
         </b-row>
 
         <!-- Oanda -->
-        <b-row class="mt-2">
+        <b-row class="mt-2" v-if="algorithmIsPublished">
           <b-col>
             <b-card>
               <p class="lead">Oanda</p>
@@ -83,34 +83,39 @@
     </b-row>
 
     <ul class="nav nav-pills mt-4">
-      <li class="nav-item">
+      <li>
         <a class="nav-link"
           v-bind:class="{active: subView === 1}"
           v-on:click="changeSubView(1)"
         >
-          Graph
+          Trades
         </a>
       </li>
 
-      <li>
+      <li class="nav-item">
         <a class="nav-link"
           v-bind:class="{active: subView === 2}"
           v-on:click="changeSubView(2)"
         >
-          Trades
+          Graph
         </a>
       </li>
     </ul>
 
-    <!-- Line Graph -->
-    <div class="line-graph mt-5" v-if="subView === 1"></div>
-    <b-spinner variant="primary" label="Spinning" v-if="subView === 1 && graphLoading" />
+    <!-- {{ trades }} -->
 
-    <ul class="list-group mt-5" v-if="subView === 2">
-      <trade v-for="trade in trades" :key="trade.id" :trade="trade" 
+    <ul class="list-group mt-5" v-if="subView === 1">
+      <trade v-for="trade in trades" :key="trade._id" :trade="trade" 
         :prototypeNo="protoNo" 
+        :algortihmIsPublished="algorithmIsPublished"
+        :interval="timeInterval"
       />
     </ul>
+
+    <!-- Line Graph -->
+    <div id="intervalCurrencyLineGraph" class="mt-5" v-if="subView === 2"></div>
+    <b-spinner variant="primary" label="Spinning" v-if="subView === 1 && graphLoading" />
+
 
     <b-alert show variant="warning" v-if="trades.length === 0 && tradesUploaded">
       No trades!
@@ -155,18 +160,27 @@ export default {
       subView: 1,
       graphLoading: false,
       trades: [],
-      timeInterval: 1,
       filteredDate: beginningOfDay(0)
     }
   },
 
   beforeMount() {
-    this.timeInterval = parseInt(this.$route.params.interval)
     this.uploadTrades({ protoNo: this.protoNo, baseCurrency: this.baseCurrency })
   },
 
 
   computed: {
+    timeInterval() {
+      return parseInt(this.$route.params.interval)
+    },
+
+    algorithmIsPublished() {
+      return this.$store.getters['algorithm/isPublished']({
+        prototypeNo: this.prototypeNo,
+        timeInterval: this.timeInterval
+      })
+    },
+
     totalTrades() { return this.trades.length; },
 
     totalPips() {
@@ -307,8 +321,11 @@ export default {
 
       const lineGraphData = this.dataFormatForLineGraph(wmaDataPoints);
 
-      clearLineGraph('line-graph')
-      buildLineGraph(lineGraphData, 'line-graph', 1300, 500)
+      console.log('line graph data >>>')
+      console.log(lineGraphData)
+
+      clearLineGraph('intervalCurrencyLineGraph')
+      buildLineGraph(lineGraphData, 'intervalCurrencyLineGraph', 1300, 500, 50)
     },
 
     /**

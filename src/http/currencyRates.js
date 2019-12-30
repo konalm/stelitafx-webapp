@@ -27,10 +27,14 @@ export const getMultiRates = async () => {
 /**
  * 
  */
-export const getWMADatapointsFromDate = async (currency, interval, startDate) => {
+export const getWMADatapointsFromDate = async (currency, interval, startDate, toDate) => {
+  const encStartDate = encodeURI(startDate.toString())
+  const encToDate = toDate ? encodeURI(toDate.toString()) : '';
+
   let response;
   try {
-    response = await apiHttpRequest.get(`wma-data-points-from-date/${currency}/interval/${interval}/start-date/${startDate}`)
+    const url = `wma-data-points-from-date/${currency}/interval/${interval}/start-date/${encStartDate}?toDate=${encToDate}`
+    response = await apiHttpRequest.get(url)
   } catch (e) {
     throw new Error(e)
   }
