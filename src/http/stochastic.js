@@ -16,22 +16,13 @@ export const getStochastics = async (abbrev, interval, count, offset) => {
 
 
 export const getStochasticsForTrade = async (prototypeNumber, interval, currency, tradeUUID) => {
-  console.log('get stochastics for trade')
-  console.log(prototypeNumber)
-  console.log(interval)
-  console.log(currency)
-  console.log(tradeUUID)
   let response 
   try {
     const path = `stochastics/${prototypeNumber}/interval/${interval}/currency/${currency}/trade/${tradeUUID}`
     response = await getHttpRequest(path)
   } catch (e) {
-    console.error(`Failed to get stochastics for trade ${tradeUUID}`)
-    return
+    return console.error(`Failed to get stochastics for trade ${tradeUUID}`)
   }
-
-  console.log('response >>>>>')
-  console.log(response)
 
   return response
 }

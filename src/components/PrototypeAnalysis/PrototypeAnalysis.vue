@@ -170,9 +170,6 @@ export default {
       };
       const currencies = Object.keys(currencyTrades);
 
-      console.log('trades >>')
-      console.log(this.trades)
-
       currencies.forEach((currency) => {
         currencyTrades[currency] = this.trades.filter((trade) => 
           trade.abbrev === `${currency}/USD`

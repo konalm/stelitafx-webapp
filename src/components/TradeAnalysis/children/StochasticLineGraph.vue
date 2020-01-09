@@ -116,8 +116,6 @@ export default {
 
       xGridTicks[this.tradeCloseIndex].classList.add("trade-close")
     },
-
-
   },
 
   watch: {
@@ -132,16 +130,16 @@ export default {
     tradeCloseIndex() {
      this.addTradeCloseClassToGraph()
     },
-  },
 
-  '$route.params.tradeId' () {
-    this.uploadStochastics()
+    '$route.params.UUID' () {
+      this.uploadStochastics()
+    },
   }
 }
 </script>
 
-<style lang="scss">
 
+<style lang="scss">
 .tick.trade-open {
   text {
     fill: rgba(0,122,255,1.0);
@@ -161,5 +159,4 @@ export default {
     stroke: rgba(215,46,61,1.0);
   }
 }
-
 </style>

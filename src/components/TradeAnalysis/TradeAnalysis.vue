@@ -223,6 +223,7 @@ export default {
       const wmaData = [...this.wmaData];
       wmaData.sort((a, b) => new Date(a.date) - new Date(b.date));
       const i =  wmaData.findIndex(compareHourAndMin, this.trade.openDate);
+
       return i
     },
 
@@ -275,11 +276,14 @@ export default {
     calculatePip(x, y) { return pipCalculator(x, y ) },
 
     goToPrevTrade() {
-      const path = `prev-trade/${this.tradeId}`
+      console.log('go to prev trade')
+      console.log(this.tradeUUID)
+
+      const path = `prev-trade/${this.tradeUUID}`
       getHttpRequest(path)
         .then(res => {
           if (!res) return;
-          this.redirectTrade(res.tradeId);
+          this.redirectTrade(res.UUID);
         })
         .catch(() => {
           throw new Error('Failed to go to previous trade');
@@ -287,24 +291,27 @@ export default {
     },
 
     goToNextTrade() {
-      const path = `next-trade/${this.tradeId}`
+      const path = `next-trade/${this.tradeUUID}`
       getHttpRequest(path)
         .then(res => {
           if (!res) return;
-          this.redirectTrade(res.tradeId);
+          this.redirectTrade(res.UUID);
         })
         .catch(() => {
           throw new Error('Failed to go to next trade');
         })
     },
 
-    redirectTrade(tradeId) {
+    redirectTrade(UUID) {
+      console.log('redirect trade')
+
       this.$router.push({
-        name: 'AlgoCurrencyTrade',
+        name: 'TradeAnalysis',
         params: {
-          algoNo: this.protoNo,
+          protoNo: this.protoNo,
+          interval: this.timeInterval,
           currency: this.currency,
-          tradeId
+          UUID
         }
       })
     },
@@ -319,7 +326,7 @@ export default {
         })
         .catch(err => {
           throw new Error(`uploading WMA data for Algo currency trade: ${err}`);
-        })
+        }) 
     },
 
     uploadTrade() {
@@ -342,7 +349,8 @@ export default {
     },
 
     setTradeViewed() {
-      tradeViewed(this.tradeId)
+
+      tradeViewed(this.tradeUUID)
     }
   },
 
@@ -352,7 +360,7 @@ export default {
     },
 
     /* reload trade & WMA data when routed to another trade */
-    '$route.params.tradeId' () {
+    '$route.params.UUID' () {
       this.uploadTrade()
       this.uploadWMAData()
       window.scrollTo(0,0)

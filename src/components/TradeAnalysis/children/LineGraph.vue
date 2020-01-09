@@ -104,7 +104,8 @@ export default {
         protoNo === 72 ||
         protoNo === 73 ||
         protoNo === 74 ||
-        protoNo === 14
+        protoNo === 14 ||
+        protoNo === 85
       ) {
         details = details.concat(this.wmaDetailsForProtoOneAndTwo)
       }
@@ -200,6 +201,8 @@ export default {
     },
 
     updateLineGraph() {
+      if (!this.formattedDataForLineGraph) return
+      
       clearLineGraph('tradeAnalysisLineGraph')
       buildLineGraph(
         this.formattedDataForLineGraph, 
