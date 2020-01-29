@@ -92,6 +92,10 @@ export default {
 
     uploadStochastics() {
       console.log('upload stochastics')
+      console.log(`abbrev ... ${this.abbrev}`)
+      console.log(`interval ... ${this.interval}`)
+      console.log(`count ... ${this.count}`)
+      console.log(`offset ... ${this.offset}`)
       getStochastics(this.abbrev, this.interval, this.count, this.offset)
         .then(res => {
           this.stochastics = res

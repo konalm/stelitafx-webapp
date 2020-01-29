@@ -102,3 +102,10 @@ export const secondsBetweenDates = (dateAS, dateBS) => {
   
   return Math.abs(seconds)
 }
+
+export const hoursFromDate = (dateFrom, hours) => {
+  const dateTo = new Date(dateFrom)
+  dateTo.setHours(dateTo.getHours() + hours)
+
+  return dateTo.toISOString()
+}

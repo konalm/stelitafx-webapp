@@ -8,9 +8,19 @@
       />
     </b-row>
 
+    <b-row class="mt-4 d-flex justify-content-end">
+      <b-col col lg="2">
+        <b-card> Volatility {{ volatility }} </b-card>
+      </b-col>
+    </b-row>
+
     <b-row>
       <div v-bind:id="domClassName"></div>
       <b-spinner variant="primary" label="Spinning" v-if="loading" />
+    </b-row>
+
+    <b-row>
+      {{ onePipUpRates }}
     </b-row>
 
     <b-row>
@@ -120,13 +130,20 @@
 <script>
 import { buildLineGraph, clearLineGraph } from '@/graph/lineGraph';
 import { getHttpRequest } from '@/http/apiRequestV2';
-import { getWMADatapointsFromDate, getMultiRates } from '@/http/currencyRates';
+import { 
+  getWMADatapointsFromDate, 
+  getMultiRates, 
+  getXTBPricesFromDate, 
+  getXTBRates,
+  getVolatility
+} from '@/http/currencyRates';
 import { getTransactionIndices } from './service';
-import { beginningOfDay, formatDateTime } from '@/services/utils';
+import { beginningOfDay, formatDateTime, hoursFromDate } from '@/services/utils';
 import pipCalculator from '@/services/pipCalculator';
 import WmaDraw from './child/WMADraw';
 import Lab from './child/Lab';
 import StochasticLineGraph from '@/components/Charting/child/StochasticLineGraph';
+import { compareHourAndMin, durationOfTrade } from '@/services/utils';
 
 
 export default {
@@ -167,15 +184,19 @@ export default {
       dataPointCount: 40,
       offset: 0,
       wmaData: [],
+      xtbRates: [],
       algorithmn: {},
       specificDate: null,
       toDateRange: null,
-      verticalLineTicks: 50
+      verticalLineTicks: 50,
+      volatility: 0,
     }
   },
 
   beforeMount() {
     this.uploadWmaDataPoint()
+    this.uploadXTBRates()
+    this.uploadVolatility()
     // this.refreshWMADatapoints()
 
     this.algorithmn = { 
@@ -191,11 +212,27 @@ export default {
   },
 
   computed: {
-    bollingerBands() {
-      let dataPoints = [...this.wmaDataPoints]
-      dataPoints = dataPoints.sort((a, b) => new Date(a.date) - new Date(b.date))
-      const length = 20
+    onePipUpRates() {
+      if (!this.lineGraphData) return 
 
+      const rates = this.lineGraphData.dataPoints
+      const onePipUpRateIndices = []
+
+      rates.forEach((x, i) => {
+        if (i === 0) return
+        if (pipCalculator(x.rate, rates[i - 1].rate)) onePipUpRateIndices.push(i)
+      })
+
+      return onePipUpRateIndices
+    },
+
+    bollingerBands() {
+      let dataPoints = [...this.wmaDataPoints] 
+
+      /* sort data points in order of date */ 
+      dataPoints = dataPoints.sort((a, b) => new Date(a.date) - new Date(b.date))
+
+      const length = 20
       const bollingerBands = []
       dataPoints.forEach((x, i) => {
         if (i < length) {
@@ -209,12 +246,13 @@ export default {
           return
         }
 
-
+        /* get the avereage of the last 20 rates to get the 20 moving average */
         const lastWMADataPointsForLength = [...this.wmaDataPoints].slice(i - length, i)
         const lastRates = lastWMADataPointsForLength.map(x => x.rate)
         const sumOfLastRates = lastRates.reduce((sum, x) => sum + x)
         const twentyMA = sumOfLastRates / length
 
+        /* get the deviation (difference 20MA is from the relative rate) and square it */
         const squaredDeviations = []
         lastRates.forEach((x) => {
           let deviation = x > twentyMA ? x - twentyMA : twentyMA - x
@@ -254,6 +292,10 @@ export default {
 
     toDateOptions() {
       return [
+        { text: '--- Select date range --- ', value: null },
+        { text: '1 Hour', value: hoursFromDate(this.specificDate, 1) },
+        { text: '2 Hour', value: hoursFromDate(this.specificDate, 2) },
+        { text: '3 Hour', value: hoursFromDate(this.specificDate, 3) },
         { text: 'Now', value: null },
         { text: 'Today', value: beginningOfDay(0) },
         { text: 'Yesterday', value: beginningOfDay(1) },
@@ -316,19 +358,38 @@ export default {
             width: 2
           }
         ]
+        // const XTBDetails = [
+        //   rr  {
+        //       key: 'xtbBid',
+        //       colour: 'purple',
+        //       width: 3
+        //     },
+        //     {
+        //        key: 'xtbAsk',
+        //       colour: 'yellow',
+        //       width: 3 
+        //     }
+        // ]
         details = details.concat(...bollingerBandDetails)
+        // details = details.concat(...XTBDetails)
 
-        console.log('details >>>')
-        console.log(details)
-        
         dataPoints = [...this.dataPoints].map((x, i) => ({
           ...x,
           ...this.bollingerBands[i]
         }))
 
-        console.log('data points >>>>>')
-        console.log(dataPoints)
-        console.log('------------------')
+     
+        // dataPoints.forEach((x) => {
+        //   const i = this.xtbRates.findIndex(compareHourAndMin, x.date)
+        //   const y = i >= 0 ? this.xtbRates[i] : this.xtbRates[0]
+
+        //   console.log(`i .... ${i}`)
+        //   console.log(y)
+
+      
+        //   x.xtbBid = y.bid
+        //   x.xtbAsk = y.ask
+        // })
 
         return {dataPoints, details}
       }
@@ -388,6 +449,26 @@ export default {
   },
 
   methods: {
+    addOnePipUpRateClasses() {
+      const xGridTicks = document.querySelectorAll(".x-grid .tick");
+      if (!xGridTicks) return
+      if (xGridTicks.length < this.tradeOpenIndex) return
+
+      this.onePipUpRates.forEach((x) => {
+        xGridTicks[x].classList.add("pip-up")
+      })
+    },
+
+    uploadVolatility() {
+      console.log('UPLOAD VOLATILITY')
+
+      getVolatility(this.currency)
+        .then(res => {
+          console.log('volatility response .... ' + res)
+          this.volatility = res
+        })
+    },
+
     incVerticalLineTicks() {
       this.verticalLineTicks += 10
     },
@@ -459,6 +540,21 @@ export default {
         .finally(() => this.loading = false)
     },
 
+    uploadXTBRates() {
+      getXTBRates(this.currency, this.dataPointCount, this.offset)
+        .then(res => {
+          this.xtbRates = res
+        })
+    },
+
+    uploadXTBRatesFromDate() {
+      getXTBPricesFromDate(this.currency, this.specificDate, this.toDateRate)
+        .then(res => {
+          console.log('xtb res >>>')    
+          console.log(res)
+        })
+    },
+
     uploadMultiRates() {
       this.loading = true 
 
@@ -513,10 +609,20 @@ export default {
   },
 
   watch: {
-    specificDate() { this.uploadWMADataPointsFromStartDate() },
+    onePipUpRates() {
+      this.addOnePipUpRateClasses()
+    },
+
+    specificDate() { 
+      this.uploadWMADataPointsFromStartDate() 
+      this.uploadXTBRates()
+    },
 
     toDateRange() {
-      if (this.specificDate) this.uploadWMADataPointsFromStartDate()
+      if (this.specificDate) {
+        this.uploadWMADataPointsFromStartDate()
+        this.uploadXTBRates()
+      }
     },
 
     verticalLineTicks() { this.updateGraph() },
@@ -529,11 +635,20 @@ export default {
 
     timeInterval() { this.uploadWmaDataPoint() },
 
-    dataPointCount() { this.uploadWmaDataPoint() },
+    dataPointCount() { 
+      this.uploadWmaDataPoint() 
+      this.uploadXTBRates()
+    },
 
-    offset() { this.uploadWmaDataPoint() },
+    offset() { 
+      this.uploadWmaDataPoint() 
+      this.uploadXTBRates()
+    },
 
-    currency() { this.uploadWmaDataPoint() },
+    currency() { 
+      this.uploadWmaDataPoint() 
+      this.uploadXTBRates()
+    },
 
     currencyRateSrc() { 
       this.uploadWmaDataPoint()
@@ -554,6 +669,16 @@ export default {
   }
 }
 
+.tick.trade-open {
+  text {
+    fill: rgba(0,122,255,1.0);
+    font-weight: bold;
+  }
+  line {
+    stroke: rgba(0,122,255,1.0);
+  }
+}
+
 .tick.trade-close {
   text {
     fill: rgba(215,46,61,1.0);
@@ -561,6 +686,16 @@ export default {
   }
   line {
     stroke: rgba(215,46,61,1.0);
+  }
+}
+
+.tick.pip-up {
+   text {
+    fill: rgb(9, 255, 0);
+    font-weight: bold;
+  }
+  line {
+    stroke: rgb(9, 255, 0);
   }
 }
 </style>

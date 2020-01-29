@@ -1,5 +1,6 @@
 import apiHttpRequest from './apiRequest.js';
 
+
 export const getCurrencyRateSourceOptions = async () => {
   let response
   try {
@@ -14,6 +15,7 @@ export const getCurrencyRateSourceOptions = async () => {
   }))
 }
 
+
 export const getMultiRates = async () => {
   let response;
   try {
@@ -24,9 +26,8 @@ export const getMultiRates = async () => {
 
   return response.data
 }
-/**
- * 
- */
+
+
 export const getWMADatapointsFromDate = async (currency, interval, startDate, toDate) => {
   const encStartDate = encodeURI(startDate.toString())
   const encToDate = toDate ? encodeURI(toDate.toString()) : '';
@@ -39,13 +40,39 @@ export const getWMADatapointsFromDate = async (currency, interval, startDate, to
     throw new Error(e)
   }
 
+  return response.data  
+}
+
+
+export const getXTBRatesFromDate = async (currency, startDate, toDate) => {
+  const encStartDate = encodeURI(startDate.toString())
+  const encToDate = toDate ? encodeURI(toDate.toString()) : '';
+
+  let response
+  try {
+    const url = `xtb-prices-from-date/${currency}/start-date/${encStartDate}?toDate=${encToDate}`
+    response = await apiHttpRequest.get(url)
+  } catch (e) {
+    throw new Error (`Http request to get XTB prices from date failed: ${e}`)
+  }
+
   return response.data
 }
 
 
-/**
- *
- */
+export const getXTBRates = async (currency, count, offset) => {
+  let response
+  try {
+    const url = `currency/${currency}/xtb-rates/${count}?offset=${offset}`
+    response = await apiHttpRequest.get(url)
+  } catch (e) {
+    throw new Error (`Http request to get XtB rates failed: ${e}`)
+  }
+
+  return response.data
+}
+
+
 export const currencyPairLatestRateHttpGetRequest = async () => {
   let response;
   try {
@@ -58,9 +85,6 @@ export const currencyPairLatestRateHttpGetRequest = async () => {
 }
 
 
-/**
- *
- */
 export const currencyWMAHttpGetRequest = async (currency, wmaLength, historical) => {
   const url = `currency/${currency}/weighted_moving_average/${wmaLength}?historical=${historical}`
 
@@ -73,6 +97,7 @@ export const currencyWMAHttpGetRequest = async (currency, wmaLength, historical)
 
   return response.data;
 }
+
 
 export const getCurrencyRateHttpGetRequest = async (currency) => {
   const url = `currency/${currency}/rate`;
@@ -88,9 +113,6 @@ export const getCurrencyRateHttpGetRequest = async (currency) => {
 }
 
 
-/**
- *
- */
 export const currenciesRatesHttpGetRequest = async (currency, amount) => {
   const url = `currency/${currency}/rates/${amount}`
 
@@ -111,9 +133,6 @@ export const currenciesRatesHttpGetRequest = async (currency, amount) => {
 }
 
 
-/**
- *
- */
 export const currenciesWMADataPointsHttpGetRequest = async (currency, historicCount = 100) => {
   const url = `currency/${currency}/wma-data-points/${historicCount}`
 
@@ -125,4 +144,16 @@ export const currenciesWMADataPointsHttpGetRequest = async (currency, historicCo
   }
 
   return response.data;
+}
+
+
+export const getVolatility = async (currency) => {
+  let response
+  try {
+    response = await apiHttpRequest.get(`volatility/${currency}`)
+  } catch (e) {
+    throw new Error('htttp request to get volatility failed')
+  }
+
+  return response.data
 }

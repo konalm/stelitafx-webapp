@@ -1,5 +1,20 @@
 import apiHttpRequest from './apiRequest.js';
 
+export const getPrototypeIntervalTradeAnalyses = 
+  async (prototypeNo, interval, dateTimeFilter) => 
+{
+  let response
+  try {
+    const url = `prototypes/${prototypeNo}/intervals/${interval}/trade-analyses?date=${dateTimeFilter}`
+    response = await apiHttpRequest(url)
+  } catch (e) {
+    console.error(`Get prototype interval trade analyses failed: ${e}`)
+    return
+  }
+
+  return response.data
+}
+
 
 export const getCurrencyTradesHttpRequest =
   async (algoProtoNo, currency, dateTimeFilter) =>
@@ -7,14 +22,16 @@ export const getCurrencyTradesHttpRequest =
   const dateTimeFilterString = dateTimeFilter
     ? dateTimeFilter.toISOString()
     : '';
-  const url = `algo/${algoProtoNo}/currency/${currency}?date=${dateTimeFilterString}`
+  const url = `algo/${algoProtoNo}/currency/${currency}?date=${dateTimeFilter}`
 
   let response;
   try {
     response = await apiHttpRequest.get(url);
   } catch (err) {
-    throw new Error('get currency trade http request')
+    console.error('get currency trade http request')
+    return
   }
+  
 
   return response.data;
 }
@@ -32,8 +49,7 @@ export const getProtoIntervalCurrencyTrades = async (
   try {
     response = await apiHttpRequest.get(path)
   } catch (e) {
-    console.error(`Failed to get proto interval currency trades ${e}`)
-    return
+    return console.error(`Failed to get proto interval currency trades ${e}`)
   }
 
   return response.data

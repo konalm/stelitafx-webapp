@@ -1,30 +1,56 @@
 <template>
   <b-row>
     <b-col>
-      <b-table striped hover :items="tradesAnalysed" />
+      <b-spinner v-if="loading" />
+      <b-table striped hover :items="tradeAnalysesFormatted" v-else />
     </b-col>
 
     <b-col>
       <b-card>
-        <p> Stop Loss: {{ stopLoss }} 
-          <b-button v-on:click="stopLossDec()" class="mr-1"> - </b-button>
+        <b-row class="d-inline-flex"> 
+          <p class="mr-3">Stop Loss: </p>
+          <b-form-input v-model="stopLoss" class="w-25 mr-3" />
+          <b-button v-on:click="stopLossDec()" class="mr-2"> - </b-button>
           <b-button v-on:click="stopLossInc()"> + </b-button>
-        </p>
+          <b-form-checkbox v-model="useStopLoss" name="check-button" class="ml-4" switch />
+        </b-row>
 
-        <br />
+        <b-row class="mt-4">
+          <p class="mr-3">Stop Gain: </p>
+          <b-form-input v-model="stopGain" class="w-25 mr-3" />
+          <b-button v-on:click="stopGainDec()" class="mr-2"> - </b-button>
+          <b-button v-on:click="stopGainInc()"> + </b-button>
+          <b-form-checkbox v-model="useStopGain" name="check-button" class="ml-4" switch />
+        </b-row>
+      </b-card>
+    </b-col>
 
-        <p>
-          Original: 
-          ( G {{ originalStats.gained }}  |  L {{ originalStats.lost }} ) 
-            {{ originalStats.gained - originalStats.lost }}
-        </p>
+    <b-col>
+      <b-card> 
+        <b-row>
+          <b-col>
+            <p> Trades {{ trades.length }} </p>
+            <hr />
+          </b-col>
+        </b-row>
 
-        <p>
-          Stop Loss: 
-          ( G {{ implementingStopLossStats.g }}  |  L {{ implementingStopLossStats.l }} )  
-            {{ implementingStopLossStats.g - implementingStopLossStats.l }}
-            / triggered {{ implementingStopLossStats.triggered }}
-        </p>
+        <b-row>
+          <b-col>
+            <p><b> Before </b></p>
+            <p> Gained  {{ originalStats.gained }}  </p>
+            <p> Lost {{ originalStats.lost }} </p>
+            <p> <b>{{ originalStats.gained - originalStats.lost }} </b> </p>
+          </b-col>
+
+          <b-col>
+            <p><b> After </b></p>
+            <p> Gained {{ implementingStopLossStats.g }} </p>
+            <p> Lost {{ implementingStopLossStats.l }} </p>
+            <p> Stop loss T {{ implementingStopLossStats.stopLossesTriggered }} </p>
+            <p> Stop gain T {{ implementingStopLossStats.stopGainsTriggered }} </p>
+            <p> <b> {{ implementingStopLossStats.g - implementingStopLossStats.l }}</b> </p>
+          </b-col>
+        </b-row>
       </b-card>
     </b-col>
   </b-row>
@@ -34,7 +60,7 @@
 <script>
 import moment from 'moment';
 import TradeItemAnalysis from './children/TradeItemAnalysis.vue'
-import { getWMADataForTrade} from '@/http/trade'
+import { getWMADataForTrade, getPrototypeIntervalTradeAnalyses } from '@/http/trade'
 import pipCalculator from '@/services/pipCalculator'
 import { formatDateTime } from '@/services/utils'
 
@@ -45,29 +71,45 @@ export default {
   },
 
   props: {
-    trades: {
-      type: Array,
-      required: true
-    },
+    trades: { type: Array, required: true },
 
-    prototypeNo: {
-      required: true
-    },
+    prototypeNo: { required: true },
 
-    interval: {
-      type: Number,
-      required: true
-    },
+    interval: { type: Number, required: true },
+
+    filteredDate: { type: String, required: false }
   },
 
   data() {
     return {
-      stopLoss: 100,
-      tradesAnalysed: []
+      stopLoss: 5,
+      stopGain: 5,
+      tradesAnalysed: [],
+      loading: true,
+      useStopLoss: true,
+      useStopGain: false
     }
   },
 
   computed: {
+    tradeAnalysesFormatted () {
+      if (!this.tradesAnalysed) return []
+
+      return this.tradesAnalysed.map((x) => {
+        const triggeredStopLoss = x.low.pips <= this.stopLoss * -1
+
+        return {
+          abbrev: x.abbrev,
+          date: moment(x.closeDate).format('DD/MM/YYYY'),
+          lowest: x.low.pips,
+          highest: x.high.pips,
+          amount: triggeredStopLoss ? this.stopLoss * -1 : x.pips,
+          triggeredStopLoss,
+          analyseTrade: '<a href="#">click me :)</a>'
+        }
+      })
+    },
+  
     originalStats() {
       let gained = 0
       let lost = 0
@@ -84,48 +126,102 @@ export default {
     implementingStopLossStats() {
       let g = 0
       let l = 0
-      let triggered = 0
+      let stopLossesTriggered = 0
+      let stopGainsTriggered = 0
+
+      if (!this.tradesAnalysed) return { g, l, stopLossesTriggered, stopGainsTriggered }
+
+      let trades = 0
+      let less = 0
+      let lessNotTriggered = 0
 
       this.tradesAnalysed.forEach((x) => {
-        const a = x.amount
-        if (a > 0) g += a
-        if (a < 0) l += a * -1
-        if (x.triggeredStopLoss) triggered ++
+        trades ++
+        const p = x.pips
+        let triggeredStopLoss = false
+        let triggeredStopGain = false
+      
+        /* triggered stop gain */
+        if (this.useStopGain && (x.high.pips >= this.stopGain)) {
+          triggeredStopGain = true
+        }
+    
+        /* triggered stop loss */
+        if (this.useStopLoss && (x.low.pips <= this.stopLoss * -1)) triggeredStopLoss = true
+
+        /* if triggered stop loss and stop gain use the one that would of been triggered
+          first */
+        if (triggeredStopLoss && triggeredStopGain) {
+          if (new Date(x.low.date) < new Date(x.high.date)) triggeredStopGain = false
+          else triggeredStopLoss = false
+        }
+
+        if (triggeredStopLoss && !triggeredStopGain) {
+          l += this.stopLoss
+          stopLossesTriggered ++
+        }
+        if (triggeredStopGain && !triggeredStopLoss) {
+          g += this.stopGain
+          stopGainsTriggered ++
+        }
+
+        /* no stops triggered, use the close rate */
+        if (!triggeredStopLoss && !triggeredStopGain) {
+          if (p > 0) g += p
+          if (p < 0) l += p * -1
+        }
       })
 
-      return { g, l, triggered }
+      return { g, l, stopLossesTriggered, stopGainsTriggered }
     }
   },
 
+  mounted() {
+    this.uploadWMADataForTrade()
+  },
+
   methods: {
-    async uploadWMADataForTrade(trade, index) {
-      const currency = trade.abbrev.substring(0,3)
+    async uploadWMADataForTrade() {
+      this.loading = true
 
-      let wmaData
-      try {
-        wmaData = await getWMADataForTrade(this.prototypeNo, this.interval, currency, trade.uuid)
-      } catch (e) {
-        console.error(`Failed to get WMA data for ${tradeUUID}`)
-      }
+      this.tradesAnalysed = await getPrototypeIntervalTradeAnalyses(
+        this.prototypeNo, 
+        this.interval, 
+        this.filteredDate
+      )
 
-      const lowestRateInTrade = wmaData.reduce((min, x) => x.rate < min ? x.rate : min, wmaData[0].rate)
-      const highestRateInTrade = wmaData.reduce((max, x) => x.rate > max ? x.rate : max, wmaData[0].rate)
+      this.loading = false
 
-      const lowest = pipCalculator(trade.openRate, lowestRateInTrade) * -1
-      const triggeredStopLoss = lowest >= this.stopLoss 
-      const amount = triggeredStopLoss ? this.stopLoss * -1 : trade.pips
+      // return 
+
+
+      // const currency = trade.abbrev.substring(0,3)
+
+      // let wmaData
+      // try {
+      //   wmaData = await getWMADataForTrade(this.prototypeNo, this.interval, currency, trade.uuid)
+      // } catch (e) {
+      //   console.error(`Failed to get WMA data for ${tradeUUID}`)
+      // }
+
+      // const lowestRateInTrade = wmaData.reduce((min, x) => x.rate < min ? x.rate : min, wmaData[0].rate)
+      // const highestRateInTrade = wmaData.reduce((max, x) => x.rate > max ? x.rate : max, wmaData[0].rate)
+
+      // const lowest = pipCalculator(trade.openRate, lowestRateInTrade) * -1
+      // const triggeredStopLoss = lowest >= this.stopLoss 
+      // const amount = triggeredStopLoss ? this.stopLoss * -1 : trade.pips
       
-      this.tradesAnalysed.push({
-        index,
-        abbrev: trade.abbrev,
-        date: moment(trade.date).format('DD/MM/YYYY'),
-        'open date': formatDateTime(trade.date),
-        'close date': formatDateTime(trade.closeDate),
-        lowest: lowest * -1,
-        highest: pipCalculator(trade.openRate, highestRateInTrade),
-        amount,
-        triggeredStopLoss
-      })
+      // this.tradesAnalysed.push({
+      //   index,
+      //   abbrev: trade.abbrev,
+      //   date: moment(trade.date).format('DD/MM/YYYY'),
+      //   'open date': formatDateTime(trade.date),
+      //   'close date': formatDateTime(trade.closeDate),
+      //   lowest: lowest * -1,
+      //   highest: pipCalculator(trade.openRate, highestRateInTrade),
+      //   amount,
+      //   triggeredStopLoss
+      // })
     },
 
     stopLossDec() {
@@ -134,14 +230,25 @@ export default {
 
     stopLossInc() {
       this.stopLoss ++
+    },
+
+    stopGainDec() {
+      this.stopGain --
+    },
+
+    stopGainInc() {
+      this.stopGain ++
     }
   },
 
   watch: {
-    trades(trades) {
-      trades.forEach(async (x, i) => {
-       await this.uploadWMADataForTrade(x, i)
-      })
+    filteredDate() {
+      console.log('trade analysis. watch filter date')
+      this.uploadWMADataForTrade()
+    },
+    interval() {
+      console.log('trade analysis, watch interval')
+      this.uploadWMADataForTrade()
     }
   }
 }

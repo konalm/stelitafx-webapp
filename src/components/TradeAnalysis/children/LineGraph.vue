@@ -112,9 +112,19 @@ export default {
 
       if (protoNo === 5 || protoNo === 51) details = details.concat(this.wmaDetails5And15)
       if (protoNo === 4 || protoNo === 6) details = details.concat(this.wmaDetails5And12)
-
+      if (protoNo === 15) details = details.concat(this.wma200)
 
       return { dataPoints, details };
+    },
+
+    wma200() {
+      return [
+        {
+          key: 'twoHundredWMA',
+          colour: 'green',
+          width: 2
+        }
+      ]
     },
 
      wmaDetailsForProtoOneAndTwo() {

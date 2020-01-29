@@ -74,8 +74,10 @@
       </b-row>
     </b-card>
 
+    <b-button v-on:click="showOanda = !showOanda">Oanda</b-button>
+
     <!-- Oanda Overall Performance -->
-    <b-row class="my-4" v-if="algorithmIsPublished">
+    <b-row class="my-4" v-if="algorithmIsPublished && showOanda">
       <b-col>
         <b-card>
           <p class="lead mb-3">Oanda</p>
@@ -99,8 +101,8 @@
     </b-row>
 
     <b-row>
-      <trade-analysis :trades="trades" :prototypeNo="proto.prototypeNo" 
-        :interval="timeInterval" 
+      <trade-analysis :trades="trades" :prototypeNo="protoNo"  :interval="timeInterval" 
+        :filteredDate="filteredDate"
       />
     </b-row>
 
@@ -143,7 +145,8 @@ export default {
       trades: [],
       filteredDate: beginningOfDay(0),
       timeInterval: 1,
-      loading: false
+      loading: false,
+      showOanda: false
     }
   },
 
