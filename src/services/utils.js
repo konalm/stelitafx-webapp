@@ -39,6 +39,17 @@ export const beginningOfDay = (minusDays = 0) => {
   return date.toISOString();
 }
 
+/**
+ * Get the date from the amount of months passed ago
+ */
+export const getDateFromMonthsAgo = (months) => {
+  const date = stringHMSFromDate(new Date())
+  date.setDate(date.getMonth() - months)
+
+  return date.toISOString();
+}
+
+
 export const getDaysFromToday = (date) => {
   const today = stringHMSFromDate(new Date());
   const d = stringHMSFromDate(date);
@@ -47,11 +58,13 @@ export const getDaysFromToday = (date) => {
   return Math.round(Math.abs((today - d) / oneDay));
 }
 
-const stringHMSFromDate = (date) => {
-  const d = new Date(date)
+
+export const stringHMSFromDate = (date = null) => {
+  const d = date ? new Date(date) : new Date()
   d.setHours(0)
   d.setMinutes(0)
   d.setSeconds(0)
+  d.setMilliseconds(0)
 
   return d
 }

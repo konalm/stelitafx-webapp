@@ -1,59 +1,63 @@
 <template>
-  <b-row>
-    <b-col>
-      <b-spinner v-if="loading" />
-      <b-table striped hover :items="tradeAnalysesFormatted" v-else />
-    </b-col>
+  <div>
+    <b-row>
+      <b-col>
+        <b-card>
+          <b-row class="d-inline-flex"> 
+            <p class="mr-3">Stop Loss: </p>
+            <b-form-input v-model.number="stopLoss" class="w-25 mr-3" />
+            <b-button v-on:click="stopLossDec()" class="mr-2"> - </b-button>
+            <b-button v-on:click="stopLossInc()"> + </b-button>
+            <b-form-checkbox v-model="useStopLoss" name="check-button" class="ml-4" switch />
+          </b-row>
 
-    <b-col>
-      <b-card>
-        <b-row class="d-inline-flex"> 
-          <p class="mr-3">Stop Loss: </p>
-          <b-form-input v-model="stopLoss" class="w-25 mr-3" />
-          <b-button v-on:click="stopLossDec()" class="mr-2"> - </b-button>
-          <b-button v-on:click="stopLossInc()"> + </b-button>
-          <b-form-checkbox v-model="useStopLoss" name="check-button" class="ml-4" switch />
-        </b-row>
+          <b-row class="mt-4">
+            <p class="mr-3">Stop Gain: </p>
+            <b-form-input v-model.number="stopGain" class="w-25 mr-3" />
+            <b-button v-on:click="stopGainDec()" class="mr-2"> - </b-button>
+            <b-button v-on:click="stopGainInc()"> + </b-button>
+            <b-form-checkbox v-model="useStopGain" name="check-button" class="ml-4" switch />
+          </b-row>
+        </b-card>
+      </b-col>
 
-        <b-row class="mt-4">
-          <p class="mr-3">Stop Gain: </p>
-          <b-form-input v-model="stopGain" class="w-25 mr-3" />
-          <b-button v-on:click="stopGainDec()" class="mr-2"> - </b-button>
-          <b-button v-on:click="stopGainInc()"> + </b-button>
-          <b-form-checkbox v-model="useStopGain" name="check-button" class="ml-4" switch />
-        </b-row>
-      </b-card>
-    </b-col>
+      <b-col>
+        <b-card> 
+          <b-row>
+            <b-col>
+              <p> Trades {{ trades.length }} </p>
+              <hr />
+            </b-col>
+          </b-row>
 
-    <b-col>
-      <b-card> 
-        <b-row>
-          <b-col>
-            <p> Trades {{ trades.length }} </p>
-            <hr />
-          </b-col>
-        </b-row>
+          <b-row>
+            <b-col>
+              <p><b> Before </b></p>
+              <p> Gained  {{ originalStats.gained }}  </p>
+              <p> Lost {{ originalStats.lost }} </p>
+              <p> <b> {{ twoDeci(originalStats.gained - originalStats.lost) }} </b> </p>
+            </b-col>
 
-        <b-row>
-          <b-col>
-            <p><b> Before </b></p>
-            <p> Gained  {{ originalStats.gained }}  </p>
-            <p> Lost {{ originalStats.lost }} </p>
-            <p> <b>{{ originalStats.gained - originalStats.lost }} </b> </p>
-          </b-col>
+            <b-col>
+              <p><b> After </b></p>
+              <p> Gained {{ implementingStopLossStats.g }} </p>
+              <p> Lost {{ implementingStopLossStats.l }} </p>
+              <p> Stop loss T {{ implementingStopLossStats.stopLossesTriggered }} </p>
+              <p> Stop gain T {{ implementingStopLossStats.stopGainsTriggered }} </p>
+              <p> <b> {{ twoDeci(implementingStopLossStats.g - implementingStopLossStats.l) }}</b> </p>
+            </b-col>
+          </b-row>
+        </b-card>
+      </b-col>
+    </b-row>
 
-          <b-col>
-            <p><b> After </b></p>
-            <p> Gained {{ implementingStopLossStats.g }} </p>
-            <p> Lost {{ implementingStopLossStats.l }} </p>
-            <p> Stop loss T {{ implementingStopLossStats.stopLossesTriggered }} </p>
-            <p> Stop gain T {{ implementingStopLossStats.stopGainsTriggered }} </p>
-            <p> <b> {{ implementingStopLossStats.g - implementingStopLossStats.l }}</b> </p>
-          </b-col>
-        </b-row>
-      </b-card>
-    </b-col>
-  </b-row>
+    <b-row class="mt-5">
+      <b-col>
+        <b-spinner v-if="loading" />
+        <b-table striped hover :items="tradeAnalysesFormatted" v-else />
+      </b-col>
+    </b-row>
+  </div>
 </template>
 
 
@@ -72,11 +76,8 @@ export default {
 
   props: {
     trades: { type: Array, required: true },
-
     prototypeNo: { required: true },
-
     interval: { type: Number, required: true },
-
     filteredDate: { type: String, required: false }
   },
 
@@ -101,6 +102,7 @@ export default {
         return {
           abbrev: x.abbrev,
           date: moment(x.closeDate).format('DD/MM/YYYY'),
+          time: moment(x.closeDate).format('HH mm'),
           lowest: x.low.pips,
           highest: x.high.pips,
           amount: triggeredStopLoss ? this.stopLoss * -1 : x.pips,
@@ -120,7 +122,7 @@ export default {
         if (pips < 0) lost += pips * -1
       })
 
-      return { gained, lost }
+      return { gained: this.twoDeci(gained), lost: this.twoDeci(lost) }
     },
 
     implementingStopLossStats() {
@@ -172,7 +174,7 @@ export default {
         }
       })
 
-      return { g, l, stopLossesTriggered, stopGainsTriggered }
+      return { g: this.twoDeci(g) , l: this.twoDeci(l), stopLossesTriggered, stopGainsTriggered }
     }
   },
 
@@ -222,6 +224,14 @@ export default {
       //   amount,
       //   triggeredStopLoss
       // })
+    },
+
+    twoDeci(num) {
+      if (!num) return 
+
+
+      const numberS = num.toFixed(2)
+      return parseFloat(numberS)
     },
 
     stopLossDec() {

@@ -16,6 +16,22 @@ export const getPrototypeIntervalTradeAnalyses =
 }
 
 
+export const getPrototypeIntervalTrades = async (prototypeNo, interval, dateFilter) => {
+  console.log('get prototype interval trades')
+
+  let path = `/protos/${prototypeNo}/intervals/${interval}/trades`
+  if (dateFilter) path += `?date=${dateFilter}`
+
+  let response
+  try {
+    response = await apiHttpRequest.get(path)
+  } catch (e) {
+    console.error(`Failed to get protoype ${prototypeNo} interval ${interval} trades`)
+  }
+
+  return response.data
+}
+
 export const getCurrencyTradesHttpRequest =
   async (algoProtoNo, currency, dateTimeFilter) =>
 {
@@ -32,9 +48,9 @@ export const getCurrencyTradesHttpRequest =
     return
   }
   
-
   return response.data;
 }
+
 
 export const getProtoIntervalCurrencyTrades = async (
   protoNo, 

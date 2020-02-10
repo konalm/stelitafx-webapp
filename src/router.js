@@ -10,6 +10,7 @@ import Monitor from '@/components/Monitor'
 import TradeAnalysis from '@/components/TradeAnalysis';
 import Charting from '@/components/Charting';
 import RateChart from '@/components/RateChart';
+import Report from '@/components/Report';
 
 Vue.use(Router);
 
@@ -65,6 +66,11 @@ export default new Router({
       path: '/rate-chart',
       name: 'RatesChart',
       component: RateChart
+    },
+    {
+      path: '/report',
+      name: 'Report',
+      component: Report
     }
   ],
 

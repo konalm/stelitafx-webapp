@@ -28,6 +28,10 @@
           <b-nav-item>
             <router-link :to="{name: 'RatesChart'}"> Rates Chart </router-link>
           </b-nav-item>
+
+          <b-nav-item>
+            <router-link :to="{name: 'Report'}"> Report </router-link>
+          </b-nav-item>
         </b-navbar-nav>
       </b-collapse>
     </b-navbar>

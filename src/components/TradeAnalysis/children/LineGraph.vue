@@ -105,7 +105,8 @@ export default {
         protoNo === 73 ||
         protoNo === 74 ||
         protoNo === 14 ||
-        protoNo === 85
+        protoNo === 85 ||
+        protoNo === 92
       ) {
         details = details.concat(this.wmaDetailsForProtoOneAndTwo)
       }

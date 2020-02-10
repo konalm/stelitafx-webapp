@@ -1,14 +1,13 @@
 <template>
   <section>
-    <!-- {{ filter }} -->
-    <b-form-select v-model="filter" :options="options" required />
+    <b-form-select v-model="filterV2" :options="optionsV2" required />    
   </section>
 </template>
 
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
-import { beginningOfDay, getDaysFromToday } from '@/services/utils'
+import { beginningOfDay, getDaysFromToday, getDateFromMonthsAgo } from '@/services/utils'
 
 export default {
   props: {
@@ -18,18 +17,47 @@ export default {
     }
   },
 
+  // lets map options to their value :)
+
   data() {
     return {
       options: [
         'Today',
         'Last 3 days',
         'Week',
+        'Two weeks',
+        'One month',
+        'Three months',
         'All time'
+      ],
+
+      optionsV2: [
+        { value: beginningOfDay(0), text: 'Today' },
+        { value: beginningOfDay(2), text: 'Last 3 days' },
+        { value: beginningOfDay(6), text: 'Week' },
+        { value: beginningOfDay(13), text: 'Two weeks' },
+        { value: getDateFromMonthsAgo(1), text: 'One month' },
+        { value: getDateFromMonthsAgo(3), text: 'Three months' },
+        { value: '', text: 'All time' }
       ]
     }
   },
 
   computed: {
+    x() {
+      console.log(`beginning of day ... ${beginningOfDay(0)}`)
+      return this.value === this.filterV2
+    },
+
+    filterV2: {
+      get: function () {
+        return this.value
+      },
+      set: function (value) {
+        this.$emit('input', value)
+      }
+    },
+
     filter: {
       get: function () { 
         if (!this.value) return this.options[3]

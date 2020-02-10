@@ -100,7 +100,7 @@
       </b-col>
     </b-row>
 
-    <b-row>
+    <b-row class="mt-5">
       <trade-analysis :trades="trades" :prototypeNo="protoNo"  :interval="timeInterval" 
         :filteredDate="filteredDate"
       />
@@ -163,8 +163,6 @@ export default {
     },
 
     currencyTrades() {
-      console.log('currency trades')
-
       const currencyTrades = {
         GBP: [],
         EUR: [],
