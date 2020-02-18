@@ -100,11 +100,11 @@
       </b-col>
     </b-row>
 
-    <b-row class="mt-5">
-      <trade-analysis :trades="trades" :prototypeNo="protoNo"  :interval="timeInterval" 
-        :filteredDate="filteredDate"
-      />
-    </b-row>
+    <trade-analysis :trades="trades" :prototypeNo="protoNo"  :interval="timeInterval" 
+      :filteredDate="filteredDate"
+    />
+
+    <timezone-analysis :trades="trades" />
 
     <b-spinner variant="primary" label="Spinning" v-if="loading" />
   </app-template>
@@ -124,6 +124,7 @@ import TimeInterval from '@/components/patterns/TimeInterval'
 import { mapGetters, mapActions } from 'vuex'
 import { beginningOfDay } from '@/services/utils';
 import TradeAnalysis from './children/TradeAnalysis'
+import TimezoneAnalysis from './children/TimezoneAnalysis';
 
 export default {
   components: {
@@ -132,7 +133,8 @@ export default {
     OandaAnalysis,
     DateFilter,
     TimeInterval,
-    TradeAnalysis
+    TradeAnalysis,
+    TimezoneAnalysis
   },
 
   data() {
@@ -146,7 +148,8 @@ export default {
       filteredDate: beginningOfDay(0),
       timeInterval: 1,
       loading: false,
-      showOanda: false
+      showOanda: false,
+      viewTradeAnalysis: true
     }
   },
 

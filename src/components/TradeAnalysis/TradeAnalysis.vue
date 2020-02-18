@@ -36,6 +36,8 @@
           <p>Short WMA difference
             <b class="ml-2"> {{ rateShortWMAPipDiffOnOpen }}</b>
           </p>
+
+          <p> Volatility {{ trade.openingVolatility }} </p>
         </b-card>
       </b-col>
 
@@ -57,6 +59,8 @@
           <p>Short WMA difference
             <b class="ml-2"> {{ rateShortWMAPipDiffOnClose }}</b>
           </p>
+
+          <p> Volatility {{ trade.closingVolatility }} </p>
         </b-card>
       </b-col>
 

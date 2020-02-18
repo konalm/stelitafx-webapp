@@ -1,63 +1,92 @@
 <template>
-  <div>
-    <b-row>
-      <b-col>
-        <b-card>
-          <b-row class="d-inline-flex"> 
-            <p class="mr-3">Stop Loss: </p>
-            <b-form-input v-model.number="stopLoss" class="w-25 mr-3" />
-            <b-button v-on:click="stopLossDec()" class="mr-2"> - </b-button>
-            <b-button v-on:click="stopLossInc()"> + </b-button>
-            <b-form-checkbox v-model="useStopLoss" name="check-button" class="ml-4" switch />
-          </b-row>
+  <b-row class="mt-5">
+    <b-col>
+      <b-row class="mt-3">
+        <b-col>
+          <b-button v-on:click="viewTradeAnalysis = !viewTradeAnalysis">
+            <b-form-checkbox v-model="viewTradeAnalysis" name="check-button" class="ml-4" switch>
+              View trade analysis
+            </b-form-checkbox>
+          </b-button>
+        </b-col>
+      </b-row>
 
-          <b-row class="mt-4">
-            <p class="mr-3">Stop Gain: </p>
-            <b-form-input v-model.number="stopGain" class="w-25 mr-3" />
-            <b-button v-on:click="stopGainDec()" class="mr-2"> - </b-button>
-            <b-button v-on:click="stopGainInc()"> + </b-button>
-            <b-form-checkbox v-model="useStopGain" name="check-button" class="ml-4" switch />
-          </b-row>
-        </b-card>
-      </b-col>
+      <b-row class="mt-4" v-if="viewTradeAnalysis">
+        <b-col>
+          <b-card>
+            <b-row class="d-inline-flex"> 
+              <p class="mr-3">Stop Loss: </p>
+              <b-form-input v-model.number="stopLoss" class="w-25 mr-3" />
+              <b-button v-on:click="stopLossDec()" class="mr-2"> - </b-button>
+              <b-button v-on:click="stopLossInc()"> + </b-button>
+              <b-form-checkbox v-model="useStopLoss" name="check-button" class="ml-4" switch />
+            </b-row>
 
-      <b-col>
-        <b-card> 
-          <b-row>
-            <b-col>
-              <p> Trades {{ trades.length }} </p>
-              <hr />
-            </b-col>
-          </b-row>
+            <b-row class="mt-4">
+              <p class="mr-3">Stop Gain: </p>
+              <b-form-input v-model.number="stopGain" class="w-25 mr-3" />
+              <b-button v-on:click="stopGainDec()" class="mr-2"> - </b-button>
+              <b-button v-on:click="stopGainInc()"> + </b-button>
+              <b-form-checkbox v-model="useStopGain" name="check-button" class="ml-4" switch />
+            </b-row>
+          </b-card>
+        </b-col>
 
-          <b-row>
-            <b-col>
-              <p><b> Before </b></p>
-              <p> Gained  {{ originalStats.gained }}  </p>
-              <p> Lost {{ originalStats.lost }} </p>
-              <p> <b> {{ twoDeci(originalStats.gained - originalStats.lost) }} </b> </p>
-            </b-col>
+        <b-col cols="8">
+          <b-card> 
+            <b-row>
+              <b-col>
+                <p> Trades {{ trades.length }} </p>
+                <hr />
+              </b-col>
+            </b-row>
 
-            <b-col>
-              <p><b> After </b></p>
-              <p> Gained {{ implementingStopLossStats.g }} </p>
-              <p> Lost {{ implementingStopLossStats.l }} </p>
-              <p> Stop loss T {{ implementingStopLossStats.stopLossesTriggered }} </p>
-              <p> Stop gain T {{ implementingStopLossStats.stopGainsTriggered }} </p>
-              <p> <b> {{ twoDeci(implementingStopLossStats.g - implementingStopLossStats.l) }}</b> </p>
-            </b-col>
-          </b-row>
-        </b-card>
-      </b-col>
-    </b-row>
+            <b-row>
+              <b-col>
+                <p><b> Before </b></p>
+                <p> Gained  {{ originalStats.gained }}  </p>
+                <p> Lost {{ originalStats.lost }} </p>
+                <p> <b> {{ twoDeci(originalStats.gained - originalStats.lost) }} </b> </p>
+              </b-col>
 
-    <b-row class="mt-5">
-      <b-col>
-        <b-spinner v-if="loading" />
-        <b-table striped hover :items="tradeAnalysesFormatted" v-else />
-      </b-col>
-    </b-row>
-  </div>
+              <b-col>
+                <p><b> After </b></p>
+                <p> Gained {{ implementingStopLossStats.g }} </p>
+                <p> Lost {{ implementingStopLossStats.l }} </p>
+                <p> Stop loss T {{ implementingStopLossStats.stopLossesTriggered }} </p>
+                <p> Stop gain T {{ implementingStopLossStats.stopGainsTriggered }} </p>
+                <p> <b> {{ twoDeci(implementingStopLossStats.g - implementingStopLossStats.l) }}</b> </p>
+              </b-col>
+
+              <b-col cols="6">
+                <p> Avg opening volatility of W trades: 
+                  {{ winningTradeAvgVolatility.opening }} 
+                </p>
+                <p> Avg closing volatility of W trades:
+                  {{ winningTradeAvgVolatility.closing }}
+                </p>
+
+                <p class="mt-4"> Avg opening volatility of L trades:  
+                  {{ losingTradeAvgVolatility.opening }}
+                </p>
+
+                <p> Avg closing volatility of L trades:
+                  {{ losingTradeAvgVolatility.closing }}
+                </p>
+              </b-col>
+            </b-row>
+          </b-card>
+        </b-col>
+      </b-row>
+
+      <b-row class="mt-5" v-if="viewTradeAnalysis">
+        <b-col>
+          <b-spinner v-if="loading" />
+          <b-table striped hover :items="tradeAnalysesFormatted" v-else />
+        </b-col>
+      </b-row>
+    </b-col>
+  </b-row>
 </template>
 
 
@@ -88,7 +117,8 @@ export default {
       tradesAnalysed: [],
       loading: true,
       useStopLoss: true,
-      useStopGain: false
+      useStopGain: false,
+      viewTradeAnalysis: true
     }
   },
 
@@ -107,7 +137,8 @@ export default {
           highest: x.high.pips,
           amount: triggeredStopLoss ? this.stopLoss * -1 : x.pips,
           triggeredStopLoss,
-          analyseTrade: '<a href="#">click me :)</a>'
+          openingVolatility: x.openingVolatility,
+          closingVolatility: x.closingVolatility,
         }
       })
     },
@@ -123,6 +154,41 @@ export default {
       })
 
       return { gained: this.twoDeci(gained), lost: this.twoDeci(lost) }
+    },
+
+    winningTrades() {
+      return this.tradesAnalysed.filter((x) => x.pips > 0)
+    },
+
+    losingTrades() {
+      return this.tradesAnalysed.filter((x) => x.pips < 0)
+    },
+
+    winningTradeAvgVolatility() {
+      const opening = this.winningTrades.reduce((sum, x) => sum + x.openingVolatility, 0) 
+        / this.winningTrades.length
+
+      const closing = this.winningTrades.reduce((sum, x) => sum + x.closingVolatility, 0) 
+        / this.winningTrades.length;
+      
+      return {
+        opening: this.twoDeci(opening),
+        closing: this.twoDeci(closing)
+      }
+    },
+
+
+    losingTradeAvgVolatility() {
+      const opening = this.losingTrades.reduce((sum, x) => sum + x.openingVolatility, 0) 
+        / this.losingTrades.length
+
+      const closing = this.losingTrades.reduce((sum, x) => sum + x.closingVolatility, 0) 
+        / this.losingTrades.length;
+      
+      return {
+        opening: this.twoDeci(opening),
+        closing: this.twoDeci(closing)
+      }
     },
 
     implementingStopLossStats() {
@@ -263,7 +329,3 @@ export default {
   }
 }
 </script>
-
-<style>
-
-</style>

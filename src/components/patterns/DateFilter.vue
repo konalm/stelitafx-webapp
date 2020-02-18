@@ -38,6 +38,9 @@ export default {
         { value: beginningOfDay(13), text: 'Two weeks' },
         { value: getDateFromMonthsAgo(1), text: 'One month' },
         { value: getDateFromMonthsAgo(3), text: 'Three months' },
+        { value: beginningOfDay(28), text: '28 Days' },
+        { value: beginningOfDay(50), text: '50 Days' },
+        { value: beginningOfDay(100), text: '100 Days' },
         { value: '', text: 'All time' }
       ]
     }
