@@ -112,6 +112,12 @@
       :tradeCloseIndex="tradeCloseIndex"
     />
 
+    <adx-graph domId="tradeAnalysisAdxGraph" :periods="adxItems"  />
+
+    <macd-graph domId="tradeAnalysisMacdGraph" :data="macdItems" />
+
+    <macd-histogram-graph :data="macdItems" />
+
     <stochastic-line-graph :abbrev="currency" :tradeId="tradeId" :tradeUUID="tradeUUID"
       :prototypeNumber="protoNo"
       :interval="timeInterval"
@@ -133,13 +139,17 @@ import moment from 'moment';
 import AppTemplate from '@/components/patterns/AppTemplate';
 import OandaAnalysis from './children/OandaAnalysis';
 import { getHttpRequest } from '@/http/apiRequestV2';
+import { getAdxItemsForTrade } from '@/http/adx'; 
+import { getMacdItemsForTrade } from '@/http/macd';
 import { tradeViewed } from '@/http/trade';
 import { compareHourAndMin, durationOfTrade } from '@/services/utils';
 import pipCalculator from '@/services/pipCalculator';
 import LineGraph from './children/LineGraph';
 import StochasticLineGraph from './children/StochasticLineGraph';
 import OtherTrades from './children/OtherTrades';
-
+import AdxGraph from '@/components/patterns/AdxGraph';
+import MacdGraph from '@/components/patterns/MacdGraph';
+import MacdHistogramGraph from '@/components/patterns/MacdHistogramGraph';
 
 export default {
   components: {
@@ -147,7 +157,10 @@ export default {
     OandaAnalysis,
     OtherTrades,
     LineGraph,
-    StochasticLineGraph
+    StochasticLineGraph,
+    AdxGraph,
+    MacdGraph,
+    MacdHistogramGraph
   },
 
   data() {
@@ -162,6 +175,8 @@ export default {
       },
 
       wmaData: [],
+      adxItems: [],
+      macdItems: [],
       isImageModalActive: true,
       trades: [],
       dateFilter: ''
@@ -174,6 +189,8 @@ export default {
 
   mounted() {
     this.uploadWMAData()
+    this.uploadAdxItems()
+    this.uploadMacdItems()
   },
 
   computed: {
@@ -280,9 +297,6 @@ export default {
     calculatePip(x, y) { return pipCalculator(x, y ) },
 
     goToPrevTrade() {
-      console.log('go to prev trade')
-      console.log(this.tradeUUID)
-
       const path = `prev-trade/${this.tradeUUID}`
       getHttpRequest(path)
         .then(res => {
@@ -307,8 +321,6 @@ export default {
     },
 
     redirectTrade(UUID) {
-      console.log('redirect trade')
-
       this.$router.push({
         name: 'TradeAnalysis',
         params: {
@@ -331,6 +343,24 @@ export default {
         .catch(err => {
           throw new Error(`uploading WMA data for Algo currency trade: ${err}`);
         }) 
+    },
+
+    uploadAdxItems() {
+      this.adxItems = [];
+
+      getAdxItemsForTrade(this.protoNo, this.timeInterval, this.currency, this.tradeUUID)
+        .then(res => {
+          this.adxItems = res
+        })
+    },
+
+    uploadMacdItems() {
+      this.macdItems = []
+
+      getMacdItemsForTrade(this.protoNo, this.timeInterval, this.currency, this.tradeUUID)
+        .then(res => {
+          this.macdItems = res
+        })
     },
 
     uploadTrade() {

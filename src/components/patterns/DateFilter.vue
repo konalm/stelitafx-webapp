@@ -33,6 +33,7 @@ export default {
 
       optionsV2: [
         { value: beginningOfDay(0), text: 'Today' },
+        { value: beginningOfDay(1), text: 'Last 2 days' },
         { value: beginningOfDay(2), text: 'Last 3 days' },
         { value: beginningOfDay(6), text: 'Week' },
         { value: beginningOfDay(13), text: 'Two weeks' },
