@@ -62,10 +62,7 @@ export default {
           width: 1
         }
       ]
-
-      console.log('adx line graph >>>')
-      console.log(  { dataPoints, details } )
-
+      
       return { dataPoints, details }
     },
   },

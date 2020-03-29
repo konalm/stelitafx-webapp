@@ -1,7 +1,7 @@
 import { getHttpRequest } from '@/http/apiRequestV2'
 
-export const getMacdItemsForTrade = async (protoNo, interval, currency, tradeUUID) => {
-  const url = `macd/${protoNo}/interval/${interval}/currency/${currency}/trade/${tradeUUID}`
+export const getMacdItemsForTrade = async (protoNo, interval, currency, tradeUUID, buffer) => {
+  const url = `macd/${protoNo}/interval/${interval}/currency/${currency}/trade/${tradeUUID}?buffer=${buffer}`
 
   let response
   try {

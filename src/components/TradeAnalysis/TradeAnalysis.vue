@@ -80,37 +80,21 @@
     </b-row>
 
     <oanda-analysis :tradeId="tradeId" :trade="trade" v-if="algorithmIsPublished" />
-    
-    <!-- <b-row>
+   
+    <!-- Zoom controls -->
+    <b-row class="mt-4">
       <b-col>
-        <p class="lead">Lowest from open: {{ lowestPipFromOpenTrade }}</p>
-        <p class="lead">Highest from open: {{ highestPipFromOpen }}</p>
-
+        <b-button v-on:click="decBuffer()"> Zoom In </b-button>
+        <b-button v-on:click="incBuffer()" class="ml-2"> Zoon Out </b-button>
       </b-col>
-    </b-row> -->
-
-    <!-- pip movement data -->
-    <!-- <b-row class="mt-5">
-      <b-col>
-        <div class="pip-movement__container">
-          <div class="item" v-for="(pip, index) in pipMovement" :key="index">
-            {{ pip.pip }}
-          </div>
-        </div>
-      </b-col>
-    </b-row> -->
-
-    <!-- open trade stats -->
-    <!-- <b-row class="mt-5">
-      <b-col>
-        {{ trade.openStats }}
-      </b-col>
-    </b-row> -->
+    </b-row>
 
     <line-graph :trade="trade" :wmaData="wmaData" :protoNo="protoNo"
       :tradeOpenIndex="tradeOpenIndex"
       :tradeCloseIndex="tradeCloseIndex"
     />
+
+    <svg id="tradeAnalysisCandlestickGraph" />
 
     <adx-graph domId="tradeAnalysisAdxGraph" :periods="adxItems"  />
 
@@ -123,6 +107,7 @@
       :interval="timeInterval"
       :tradeOpenIndex="tradeOpenIndex" 
       :tradeCloseIndex="tradeCloseIndex"
+      :buffer="buffer"
     />
 
     <other-trades :tradeId="tradeId" :trade="trade" :protoNo="protoNo" 
@@ -150,6 +135,8 @@ import OtherTrades from './children/OtherTrades';
 import AdxGraph from '@/components/patterns/AdxGraph';
 import MacdGraph from '@/components/patterns/MacdGraph';
 import MacdHistogramGraph from '@/components/patterns/MacdHistogramGraph';
+import { getCandlesForTrade } from '@/http/candles';
+import { drawChart as drawCandlestickGraph, clearCandlestickGraph } from '@/graph/candlestickGraph'; 
 
 export default {
   components: {
@@ -179,7 +166,9 @@ export default {
       macdItems: [],
       isImageModalActive: true,
       trades: [],
-      dateFilter: ''
+      dateFilter: '',
+      candles: [],
+      buffer: 100
     }
   },
 
@@ -188,9 +177,7 @@ export default {
   },
 
   mounted() {
-    this.uploadWMAData()
-    this.uploadAdxItems()
-    this.uploadMacdItems()
+    this.upload()
   },
 
   computed: {
@@ -294,6 +281,21 @@ export default {
   },
 
   methods: {
+    upload() {
+      this.uploadWMAData()
+      this.uploadAdxItems()
+      this.uploadMacdItems()
+      this.uploadCandles();
+    },
+
+    incBuffer() {
+      this.buffer += 20
+    },
+
+    decBuffer() {
+      this.buffer -= 20
+    },
+
     calculatePip(x, y) { return pipCalculator(x, y ) },
 
     goToPrevTrade() {
@@ -332,10 +334,18 @@ export default {
       })
     },
 
+    uploadCandles() {
+      getCandlesForTrade(this.protoNo, this.timeInterval, this.currency, this.tradeUUID, this.buffer)
+        .then((res) => {
+          clearCandlestickGraph('tradeAnalysisCandlestickGraph')
+          drawCandlestickGraph(res, 'tradeAnalysisCandlestickGraph')
+        })
+    },
+
     uploadWMAData() {
       this.wmaData = [];
 
-      const path = `/wma/${this.protoNo}/interval/${this.timeInterval}/${this.currency}/trade/${this.tradeUUID}`
+      const path = `/wma/${this.protoNo}/interval/${this.timeInterval}/${this.currency}/trade/${this.tradeUUID}?buffer=${this.buffer}`
       getHttpRequest(path)
         .then(res => {
           this.wmaData = res;
@@ -348,7 +358,7 @@ export default {
     uploadAdxItems() {
       this.adxItems = [];
 
-      getAdxItemsForTrade(this.protoNo, this.timeInterval, this.currency, this.tradeUUID)
+      getAdxItemsForTrade(this.protoNo, this.timeInterval, this.currency, this.tradeUUID, this.buffer)
         .then(res => {
           this.adxItems = res
         })
@@ -357,7 +367,7 @@ export default {
     uploadMacdItems() {
       this.macdItems = []
 
-      getMacdItemsForTrade(this.protoNo, this.timeInterval, this.currency, this.tradeUUID)
+      getMacdItemsForTrade(this.protoNo, this.timeInterval, this.currency, this.tradeUUID, this.buffer)
         .then(res => {
           this.macdItems = res
         })
@@ -389,6 +399,10 @@ export default {
   },
 
   watch: {
+    buffer() {
+      this.upload()
+    },
+
     trade(value) {
       if (!value.viewed) this.setTradeViewed()
     },

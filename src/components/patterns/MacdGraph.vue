@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div :id="domId" />
+    <div :id="domId" class="line-graph" />
   </div>
 </template>
 
@@ -34,6 +34,7 @@ export default {
 
       const dataPoints = this.data.map((dataPoint) => ({
         date: dataPoint.date,
+        zero: 0.00,
         macd: dataPoint.macdLine,
         macdLag: dataPoint.macdLag,
       }));
@@ -48,6 +49,11 @@ export default {
           key: 'macdLag',
           colour: 'blue',
           width: 1
+        },
+        {
+          key: 'zero',
+          colour: 'black',
+          width: 1.4
         }
       ]
       

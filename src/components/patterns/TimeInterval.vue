@@ -17,8 +17,6 @@ export default {
   data() { return {} },
 
   beforeMount() {
-    // if (this.$router.query.interval) this.interval = this.$router.query.interval
-
     if (!this.options.length) this.$store.dispatch('timeInterval/uploadTimeIntervals')
 
   },
@@ -38,17 +36,6 @@ export default {
       }
     },
   },
-
-  watch: {
-    // interval(value) {
-    //   this.$router.push({query: {interval: value}})
-    //   this.$emit('input', value)
-    // },
-
-    // value(value) {
-    //   this.$emit('input', value)
-    // }
-  }
 }
 </script>
 

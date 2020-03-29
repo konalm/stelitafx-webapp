@@ -9,11 +9,11 @@
     <b-row>
       <b-col class="d-flex flex-row-reverse"> 
         <b-button-group size="sm">
-          <b-button v-on:click="adjustVerticalXTicks(10)"> 
+          <b-button v-on:click="adjustVerticalXTicks(40)"> 
             <i class="fas fa-plus"></i> 
           </b-button>
 
-          <b-button v-on:click="adjustVerticalXTicks(-10)">
+          <b-button v-on:click="adjustVerticalXTicks(-40)">
             <i class="fas fa-minus"></i> 
           </b-button>
         </b-button-group>
@@ -111,11 +111,14 @@ export default {
         protoNo === 96
       ) {
         details = details.concat(this.wmaDetailsForProtoOneAndTwo)
+        details = details.concat(this.wma200)
       }
 
       if (protoNo === 5 || protoNo === 51) details = details.concat(this.wmaDetails5And15)
       if (protoNo === 4 || protoNo === 6) details = details.concat(this.wmaDetails5And12)
       if (protoNo === 15) details = details.concat(this.wma200)
+      if (protoNo === 101) details = details.concat(this.wma200)
+      if (protoNo === 200) details = details.concat(this.wma200)
 
       return { dataPoints, details };
     },

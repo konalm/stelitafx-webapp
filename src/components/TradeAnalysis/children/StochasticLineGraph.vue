@@ -36,6 +36,11 @@ export default {
     tradeCloseIndex: {
       type: Number,
       required: true
+    },
+    buffer: {
+      type: Number,
+      required: false,
+      default: 40
     }
   },
 
@@ -86,7 +91,7 @@ export default {
 
   methods: {
     uploadStochastics() {
-      getStochasticsForTrade(this.prototypeNumber, this.interval, this.abbrev, this.tradeUUID)
+      getStochasticsForTrade(this.prototypeNumber, this.interval, this.abbrev, this.tradeUUID, this.buffer)
         .then(res => {
           this.stochastics = res
         })

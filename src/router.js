@@ -11,6 +11,8 @@ import TradeAnalysis from '@/components/TradeAnalysis';
 import Charting from '@/components/Charting';
 import RateChart from '@/components/RateChart';
 import Report from '@/components/Report';
+import Simulator from '@/views/Simulator.vue';
+
 
 Vue.use(Router);
 
@@ -71,6 +73,11 @@ export default new Router({
       path: '/report',
       name: 'Report',
       component: Report
+    },
+    {
+      path: '/simulator',
+      name: 'Simulator',
+      component: Simulator
     }
   ],
 

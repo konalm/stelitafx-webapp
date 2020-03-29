@@ -17,8 +17,6 @@ export default {
     }
   },
 
-  // lets map options to their value :)
-
   data() {
     return {
       options: [

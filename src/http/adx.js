@@ -1,8 +1,8 @@
 import { getHttpRequest } from '@/http/apiRequestV2'
 
-export const getAdxItemsForTrade = async (protoNo, interval, currency, tradeUUID) => {
-  const url = `adx/${protoNo}/interval/${interval}/currency/${currency}/trade/${tradeUUID}`
-  console.log(url)
+
+export const getAdxItemsForTrade = async (protoNo, interval, currency, tradeUUID, buffer) => {
+  const url = `adx/${protoNo}/interval/${interval}/currency/${currency}/trade/${tradeUUID}?buffer=${buffer}`
 
   let response
   try {

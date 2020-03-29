@@ -32,6 +32,10 @@
           <b-nav-item>
             <router-link :to="{name: 'Report'}"> Report </router-link>
           </b-nav-item>
+
+          <b-nav-item>
+            <router-link :to="{name: 'Simulator'}"> Simulator </router-link>
+          </b-nav-item>
         </b-navbar-nav>
       </b-collapse>
     </b-navbar>
