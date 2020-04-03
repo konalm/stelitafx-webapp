@@ -1,37 +1,39 @@
 <template>
   <app-template>
     <b-container>
-      <!-- filters -->
-      <b-row>
-        <b-col cols lg="3">
-          <date-filter v-model="filteredDate" />
-        </b-col>
-
-        <b-col cols lg="3">
-          <time-interval v-model="timeInterval" />
-        </b-col>
-
-        <b-col cols lg="3">
-          <abbrev-filter v-model="abbrev" />
-        </b-col>
-      </b-row>
-
       <b-row class="mt-3">
         <b-col cols lg="3">
-          <b-card>
-            <p class="text-success"> {{ stats.gains }} </p> 
-            <p class="text-danger">{{ stats.losses * -1 }} </p>
-            <p> {{ stats.gains - stats.losses * -1 }} </p>
-          </b-card>
+          <performance-summary :trades="simulatedTrades" />
         </b-col>
 
         <b-col>
-          <simulated-trade-analysis :periods="periods" :trade="activeTrade" />
+          <!-- <simulated-trade-analysis :periods="periods" :trade="activeTrade" /> -->
         </b-col>
       </b-row>
 
+      <b-row>
+        <line-graph :dataPoints="lineGraphRatesWma" 
+          :details="lineGraphRatesWmaDetails"
+          domClassName="simulator-prices-wma-line-graph" 
+        />
+      </b-row>
+
+      <b-row>
+        <line-graph :dataPoints="stochasticLineGraphData"
+          :details="stochasticLineGraphDetails"
+          domClassName="simulator-stochastic-line-graph"
+        />
+      </b-row>
+
+      <b-row>
+        <line-graph :dataPoints="adxLineGraphData"
+          :details="adxLineGraphDetails"
+          domClassName="simulator-adx-line-graph"
+        />
+      </b-row>
+
       <!-- simulated history -->
-      <b-row class="mt-3">
+      <!-- <b-row class="mt-3">
         <simulated-trade-summary v-for="(trade, index) in simulatedTrades" 
           :key="trade.close.date"
           :openTrade="trade.open"
@@ -39,7 +41,7 @@
           :stats="trade.stats"
           v-on:click="updateActiveTrade(index)"
         />
-      </b-row>
+      </b-row> -->
     </b-container>
   </app-template>
 </template>
@@ -50,10 +52,15 @@ import AppTemplate from '@/components/patterns/AppTemplate';
 import DateFilter from '@/components/patterns/DateFilter';
 import TimeInterval from '@/components/patterns/TimeInterval';
 import AbbrevFilter from '@/components/patterns/AbbrevFilter';
+import PerformanceSummary from '@/components/Simulator/PerformanceSummary';
+import LineGraph from '@/components/patterns/LineGraph';
 import { beginningOfDay } from '@/services/utils';
 import { getSimulatedHistory } from '@/http/simulate-history';
 import SimulatedTradeSummary from '@/components/Simulator/SimulatedTradeSummary';
 import SimulatedTradeAnalysis from '@/components/Simulator/TradeGraph';
+import { fetchCachedCalcPeriods } from '@/http/simulate-history';
+import endpoints from '@/endpoints';
+import { get } from '@/http/httpRequest';
 
 export default {
   components: {
@@ -62,7 +69,9 @@ export default {
     TimeInterval,
     AbbrevFilter,
     SimulatedTradeSummary,
-    SimulatedTradeAnalysis
+    SimulatedTradeAnalysis,
+    PerformanceSummary,
+    LineGraph
   },
 
   data() {
@@ -72,34 +81,138 @@ export default {
       abbrev: 'GBP',
       simulatedTrades: [],
       activeTrade: {},
-      periods: []
+      periods: [],
+      name: ''
     }
   },
 
   computed: {
-    stats() {
-      let gains = 0
-      let losses = 0
-
-      this.simulatedTrades.forEach((trade) => {
-        if (trade.stats.pips > 0) gains += trade.stats.pips
-        if (trade.stats.pips < 0) losses += trade.stats.pips
-      })
-
-      return {
-        gains,
-        losses
-      }
-    }
+    trades() {
+      return this.simulatedTrades.length
+    },
   },
 
   beforeMount() {
-    this.uploadSimulatedHistory()
+    // this.uploadSimulatedHistory()
+
+    fetchCachedCalcPeriods()
+      .then((res) => {
+        this.periods = res.splice(res.length - 1000, res.length);
+        // this.periods = res;
+        this.name = 'HIGHLANDER'
+      })
+  },
+
+  computed: {
+    lineGraphRatesWma() {
+      return [...this.periods].map((x) => ({
+        date: x.date,
+        rate: x.exchange_rate,
+        wma5: x.wma[5],
+        wma12: x.wma[12],
+        wma36: x.wma[36],
+        wma100: x.wma[100],
+        wma200: x.wma[200]
+      }))
+    },
+
+    lineGraphRatesWmaDetails() {
+      return [
+        {
+          key: 'rate',
+          colour: 'black',
+          width: 1
+        },
+        {
+          key: 'wma5',
+          colour: 'orange',
+          width: 1
+        },
+        {
+          key: 'wma12',
+          colour: 'green',
+          width: 1
+        },
+        {
+          key: 'wma36',
+          colour: 'blue',
+          width: 1
+        },
+        {
+          key: 'wma100',
+          colour: 'purple',
+          width: 2
+        },
+        {
+          key: 'wma200',
+          colour: 'red',
+          width: 1
+        }
+      ]
+    },
+
+    stochasticLineGraphData() {
+      return [...this.periods].map((x) => ({
+        date: x.date,
+        stochastic: x.stochastic,
+        twenty: 20,
+        eighty: 80
+      }))
+    },
+
+    stochasticLineGraphDetails() {
+      return [
+        {
+          key: 'stochastic',
+          colour: 'blue',
+          width: 1
+        },
+        {
+          key: 'twenty',
+          colour: 'grey',
+          width: 1
+        },
+        {
+          key: 'eighty',
+          colour: 'grey',
+          width: 1
+        }
+      ]
+    },
+
+    adxLineGraphData() {
+      return [...this.periods].map((x) => ({
+        date: x.date,
+        plusDi: x.adx.plusDi,
+        minusDi: x.adx.minusDi,
+        adx: x.adx.adx
+      }))
+    },
+
+    adxLineGraphDetails() {
+      return [
+        {
+          key: 'plusDi',
+          colour: 'green',
+          width: 1
+        },
+        {
+          key: 'minusDi',
+          colour: 'red',
+          width: 1
+        },
+        {
+          key: 'adx',
+          colour: 'black',
+          width: 1
+        }
+      ]
+    }
   },
 
   methods: {
     uploadSimulatedHistory() {
-      getSimulatedHistory(this.timeInterval, this.abbrev, this.filteredDate)
+      getSimulatedHistory(this.timeInterval, this.abbrev)()
         .then(res => {
           this.simulatedTrades = res.trades,
           this.periods = res.data
@@ -107,8 +220,6 @@ export default {
     },
 
     updateActiveTrade(index) {
-      console.log('update active index')
-      
       this.activeTrade = this.simulatedTrades[index]
     },
   },
@@ -131,7 +242,3 @@ export default {
   }
 }
 </script>
-
-<style>
-
-</style>

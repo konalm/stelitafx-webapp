@@ -9,6 +9,10 @@ const margin = {top: 20, right: 20, bottom: 30, left: 40};
  *
  */
 export const buildLineGraph = (data, domClassName, _width, _height, xTicks = 50) => {
+  console.log('build line graph .... ')
+  console.log(data)
+  console.log(domClassName)
+
   const width = _width - margin.left - margin.right;
   const height = _height - margin.top - margin.bottom;
 

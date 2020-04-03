@@ -10,9 +10,6 @@ const httpInstance = axios.create({
 })
 
 
-/**
- * Get HTTP request to Stelita FX API
- */
 export const getHttpRequest = async (path, params = {}) => {
 
   let response;
@@ -26,6 +23,7 @@ export const getHttpRequest = async (path, params = {}) => {
   return response.data
 }
 
+export const get = url => async () => {}
 
 export const postHttpRequest = async (payload) => {
   let response 

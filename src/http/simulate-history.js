@@ -1,17 +1,8 @@
 import { getHttpRequest } from '@/http/apiRequestV2'
+import { get } from './httpRequest'
 
-export const getSimulatedHistory = async (interval, currency, date) => {
-  const url = `/simulate-history/${interval}/currency/${currency}?since=${date}`
 
-  console.log(url)
+export const getSimulatedHistory = (interval, currency) => 
+  get(`/simulate-history/${interval}/currency/${currency}`)
 
-  let response
-  try {
-    response = await getHttpRequest(url)
-  } catch (e) {
-    console.log(e)
-    throw new Error('Failed to get simulated history')
-  }
-
-  return response
-}
+export const fetchCachedCalcPeriods = get('/cached-calc-periods')

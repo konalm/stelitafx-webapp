@@ -94,14 +94,6 @@
       :tradeCloseIndex="tradeCloseIndex"
     />
 
-    <svg id="tradeAnalysisCandlestickGraph" />
-
-    <adx-graph domId="tradeAnalysisAdxGraph" :periods="adxItems"  />
-
-    <macd-graph domId="tradeAnalysisMacdGraph" :data="macdItems" />
-
-    <macd-histogram-graph :data="macdItems" />
-
     <stochastic-line-graph :abbrev="currency" :tradeId="tradeId" :tradeUUID="tradeUUID"
       :prototypeNumber="protoNo"
       :interval="timeInterval"
@@ -109,6 +101,14 @@
       :tradeCloseIndex="tradeCloseIndex"
       :buffer="buffer"
     />
+
+    <svg id="tradeAnalysisCandlestickGraph" />
+
+    <adx-graph domId="tradeAnalysisAdxGraph" :periods="adxItems"  />
+
+    <macd-graph domId="tradeAnalysisMacdGraph" :data="macdItems" />
+
+    <macd-histogram-graph :data="macdItems" />
 
     <other-trades :tradeId="tradeId" :trade="trade" :protoNo="protoNo" 
       :timeInterval="timeInterval" 

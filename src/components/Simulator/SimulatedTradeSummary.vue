@@ -5,6 +5,7 @@
       <p> {{ formatTime(openTrade.date) }} - {{ formatTime(closeTrade.date) }} </p>
       <p> {{ stats.pips }} </p>
       <p> Duration   {{ stats.duration }} </p>
+      <p> Triggered stop loss: {{ closeTrade.triggeredStopLoss }} </p>
     </b-card>
   </b-col>
 </template>
@@ -27,7 +28,7 @@ export default {
     stats: {
       pips: 0.00,
       duration: 0
-    }
+    },
   },
 
   methods: {
