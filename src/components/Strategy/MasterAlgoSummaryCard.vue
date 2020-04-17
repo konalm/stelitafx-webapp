@@ -3,7 +3,11 @@
     <b-card>
       <p class="lead"> {{ masterAlgoSummary.description }} </p>
 
-      <router-link :to="{}">
+      <router-link :to="{ name: 'MasterAlgo', 
+        params: {
+          strategyUUID: strategyUUID,
+          masterAlgoUUID: masterAlgoSummary.UUID
+      }}">
         <b-button variant="primary" class="mt-4 w-100">View</b-button>
       </router-link>
     </b-card>

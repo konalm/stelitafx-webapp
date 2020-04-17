@@ -1,5 +1,6 @@
 import apiHttpRequest from './apiRequest.js';
 import { getHttpRequest } from '@/http/apiRequestV2'
+import { get } from './httpRequest'
 
 
 /**
@@ -30,3 +31,6 @@ export const getPublishedAlgorithms = async () => {
 
   return response
 }
+
+
+export const fetchAlgoStats = (id, interval) => get(`algorithm/${id}/intervals/${interval}/stats`)

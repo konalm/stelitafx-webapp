@@ -15,6 +15,7 @@ import Simulator from '@/views/Simulator';
 import CandlePatterns from '@/views/CandlePatterns';
 const Strategies = () => import('@/views/Strategies');
 const Strategy = () => import('@/views/Strategy');
+const MasterAlgo = () => import('@/views/MasterAlgo');
 
 
 Vue.use(Router);
@@ -31,6 +32,11 @@ export default new Router({
       path: '/strategies/:UUID',
       name: 'Strategy',
       component: Strategy
+    },
+    {
+      path: '/strategies/:strategyUUID/master-algo/:masterAlgoUUID',
+      name: 'MasterAlgo',
+      component: MasterAlgo
     },
     {
       path: '/',

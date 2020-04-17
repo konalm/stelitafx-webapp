@@ -23,18 +23,14 @@
 
           <p class="mt-2">Total trades: {{ trades.length }}</p>
           
-          <p>
-            W {{ winningTradeCount }} | L {{ losingTradeCount }}
-          </p>
+          <p> W {{ winningTradeCount }} | L {{ losingTradeCount }} </p>
 
           <p v-bind:class="{'text-success': winningTradePercent >= 65}">
             {{ winningTradePercent }} %
           </p>
         </section>
 
-        <b-alert show ariant="warning" class="mt-3" v-else>
-          No trades!
-        </b-alert>
+        <b-alert show ariant="warning" class="mt-3" v-else> No trades! </b-alert>
       </section>
 
       <p class="text-center" v-else>
@@ -45,9 +41,8 @@
         name: 'PrototypeAnalysis', 
         params: {
           no: proto.prototype_no,
-          interval: this.timeInterval}
-        }" 
-      >
+          interval: this.timeInterval
+      }}">
         <b-button variant="primary" class="mt-2 w-100">View</b-button>
       </router-link>
     </b-card>
