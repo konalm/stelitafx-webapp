@@ -9,32 +9,8 @@
 
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav>
-          <b-nav-item>
-            <router-link :to="{name: 'Home'}"> Prototypes </router-link>
-          </b-nav-item>
-
-          <b-nav-item>
-            <router-link :to="{name: 'Currencies'}"> Currencies </router-link>
-          </b-nav-item>
-
-          <b-nav-item>
-            <router-link :to="{name: 'Monitor'}"> Monitor </router-link>
-          </b-nav-item>
-
-          <b-nav-item>
-            <router-link :to="{name: 'Charting'}"> Charting </router-link>
-          </b-nav-item>
-
-          <b-nav-item>
-            <router-link :to="{name: 'RatesChart'}"> Rates Chart </router-link>
-          </b-nav-item>
-
-          <b-nav-item>
-            <router-link :to="{name: 'Report'}"> Report </router-link>
-          </b-nav-item>
-
-          <b-nav-item>
-            <router-link :to="{name: 'Simulator'}"> Simulator </router-link>
+          <b-nav-item v-for="link in links" :key="link.name">
+            <router-link :to="{name: link.name}"> {{ link.txt }} </router-link>
           </b-nav-item>
         </b-navbar-nav>
       </b-collapse>
@@ -57,10 +33,46 @@ export default {
   },
 
   data() {
-    return {}
+    return {
+      links: [
+        {
+          name: 'Strategies',
+          txt: 'Strategies'
+        },
+        // {
+        //   name: 'Currencies',
+        //   txt: 'Currencies'
+        // },
+        // {
+        //   name: 'Monitor',
+        //   txt: 'Monitor'
+        // },
+        {
+          name: 'Charting',
+          txt: 'Charting'
+        },
+        // {
+        //   name: 'RatesChart',
+        //   txt: 'Rates Chart'
+        // },
+        // {
+        //   name: 'Report',
+        //   txt: 'Report'
+        // },
+        {
+          name: 'Simulator',
+          txt: 'Simulator'
+        },
+        {
+          name: 'CandlePatterns',
+          txt: 'Candle Patterns'
+        }
+      ]
+    }
   },
 }
 </script>
+
 
 <style lang="scss" scoped>
 .container__full-width {

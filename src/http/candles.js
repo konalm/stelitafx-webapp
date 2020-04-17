@@ -1,5 +1,5 @@
 import { getHttpRequest } from '@/http/apiRequestV2'
-
+import { get } from './httpRequest'
 
 export const getCandles = async (interval, currency, count, offset) => {
   const url = `/candle/${interval}/currency/${currency}/count/${count}?offset=${offset}`
@@ -28,3 +28,8 @@ export const getCandlesForTrade = async (protoNo, interval, currency, tradeUUID,
 
   return response.sort((a,b) => new Date(a.date) - new Date(b.date))
 }
+
+
+export const fetchCandlePatternSimulator = (abbrev, sinceDate) => get(
+  `candle-pattern-simulator/${abbrev}?sinceDate=${sinceDate}`
+)

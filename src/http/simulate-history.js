@@ -1,8 +1,8 @@
-import { getHttpRequest } from '@/http/apiRequestV2'
 import { get } from './httpRequest'
 
 
-export const getSimulatedHistory = (interval, currency) => 
-  get(`/simulate-history/${interval}/currency/${currency}`)
+export const getSimulatedHistory = () => get('/simulate-history')
 
-export const fetchCachedCalcPeriods = get('/cached-calc-periods')
+export const fetchCachedCalcPeriods = (fromDate, toDate, buffer) => get(
+  `/cached-calc-periods?fromDate=${fromDate}&toDate=${toDate}&buffer=${buffer}`
+)

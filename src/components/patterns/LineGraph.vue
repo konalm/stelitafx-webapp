@@ -33,6 +33,10 @@ export default {
     }
   },
 
+  mounted() {
+    this.updateGraph()
+  },
+
   computed: {
     graphFormattedData() {
       if (!this.dataPoints.length) return 

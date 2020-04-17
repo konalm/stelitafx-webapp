@@ -1,8 +1,8 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 
-import Prototypes from '@/components/Prototypes';
-import PrototypeAnalysis from '@/components/PrototypeAnalysis';
+const Prototypes = () => import('@/components/Prototypes');
+const PrototypeAnalysis = () => import('@/components/PrototypeAnalysis');
 import Home from '@/components/Home.vue';
 import Currency from '@/components/Currency.vue';
 import PrototypeCurrencyAnalysis from '@/components/PrototypeCurrencyAnalysis';
@@ -11,7 +11,10 @@ import TradeAnalysis from '@/components/TradeAnalysis';
 import Charting from '@/components/Charting';
 import RateChart from '@/components/RateChart';
 import Report from '@/components/Report';
-import Simulator from '@/views/Simulator.vue';
+import Simulator from '@/views/Simulator';
+import CandlePatterns from '@/views/CandlePatterns';
+const Strategies = () => import('@/views/Strategies');
+const Strategy = () => import('@/views/Strategy');
 
 
 Vue.use(Router);
@@ -19,6 +22,16 @@ Vue.use(Router);
 
 export default new Router({
   routes: [
+    {
+      path: '/strategies',
+      name: 'Strategies',
+      component: Strategies
+    },
+    {
+      path: '/strategies/:UUID',
+      name: 'Strategy',
+      component: Strategy
+    },
     {
       path: '/',
       name: 'Currencies',
@@ -78,7 +91,12 @@ export default new Router({
       path: '/simulator',
       name: 'Simulator',
       component: Simulator
-    }
+    },
+    {
+      path: '/candle-patterns',
+      name: 'CandlePatterns',
+      component: CandlePatterns
+    },
   ],
 
   mode: 'history',

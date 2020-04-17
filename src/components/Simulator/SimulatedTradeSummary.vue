@@ -1,6 +1,6 @@
 <template>
   <b-col cols="3" class="my-3" v-on:click="$emit('click')">
-    <b-card>
+    <b-card v-bind:class="{'highlight': active}">
       <p> {{ formatDate(openTrade.date) }} - {{ formatDate(closeTrade.date) }} </p>
       <p> {{ formatTime(openTrade.date) }} - {{ formatTime(closeTrade.date) }} </p>
       <p> {{ stats.pips }} </p>
@@ -29,6 +29,10 @@ export default {
       pips: 0.00,
       duration: 0
     },
+    active: {
+      type: Boolean,
+      default: false
+    }
   },
 
   methods: {
@@ -42,3 +46,10 @@ export default {
   }
 }
 </script>
+
+
+<style scoped>
+.card.highlight {
+  background: rgb(235,235,235)
+}
+</style>

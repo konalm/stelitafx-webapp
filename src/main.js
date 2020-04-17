@@ -1,5 +1,4 @@
 import Vue from 'vue'
-// import Vuex from 'vuex'
 import { Modal, Datepicker, Timepicker, Field } from 'buefy/dist/components';
 import 'buefy/dist/buefy.css'
 import App from './App.vue';
