@@ -29,11 +29,11 @@ export default {
   font-size: 12px;
 }
 
-.Gain, .Profit, .gained {
+.Gain, .Profit, .gained, .W {
   fill: #28a745;
 }
 
-.Loss, .lost {
+.Loss, .lost, .L {
   fill: #dc3545;
 }
 

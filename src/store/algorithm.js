@@ -5,7 +5,8 @@ const algorithmStore = {
   namespaced: true,
 
   state: {
-    publishedAlgorithms: []
+    publishedAlgorithms: [],
+    algoStats: []
   },
 
   getters: {
@@ -16,12 +17,24 @@ const algorithmStore = {
       )
 
       return foundAlgorithm >= 0
+    },
+
+    masterAlgoStats: (state) => (UUID) => {
+      return state.algoStats.filter((x) => x.masterAlgoUUID === UUID)
     }
   },
 
   mutations: {
     setPublishedAlgorithms(state, publishedAlgorithms) {
       state.publishedAlgorithms = publishedAlgorithms
+    },
+
+    updateAlgoStat(state, payload) {
+      state.algoStats[payload.index] = payload.algo
+    },
+
+    addAlgo(state, payload) {
+      state.algoStats.push(payload)
     }
   },
 
@@ -35,6 +48,16 @@ const algorithmStore = {
       }
 
       commit('setPublishedAlgorithms', publishedAlgorithms)
+    },
+
+    addMasterAlgoStatItem({ state, commit }, algo) {
+      const existingAlgoIndex = state.algoStats.findIndex((x) => x.protoNo === algo.protoNo)
+      if (existingAlgoIndex > -1) {
+        commit('updateAlgoStat', ({algo, index: existingAlgoIndex}))
+        return
+      }
+
+      commit('addAlgo', algo)
     }
   }
 }
