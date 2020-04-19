@@ -39,6 +39,11 @@ export default new Router({
       component: MasterAlgo
     },
     {
+      path: '/strategies/:strategyUUID/master-algo/:masterAlgoUUID/algo/:no',
+      name: 'Algo',
+      component: PrototypeAnalysis
+    },
+    {
       path: '/',
       name: 'Currencies',
       component: Home

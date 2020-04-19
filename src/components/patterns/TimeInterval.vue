@@ -5,20 +5,21 @@
 </template>
 
 <script>
+const DEFAULT_INTERVAL = 1
+
 export default {
   props: {
     value: {
       type: Number,
       required: true,
-      default: 1
+      default: DEFAULT_INTERVAL
     }
   },
-
-  data() { return {} },
 
   beforeMount() {
     if (!this.options.length) this.$store.dispatch('timeInterval/uploadTimeIntervals')
 
+    this.setIntervalFromUrl()
   },
 
   computed: {
@@ -30,12 +31,19 @@ export default {
       get() {
         return this.value
       },
-
       set(value) {
         this.$emit('input', value)
       }
     },
   },
+
+  methods: {
+    setIntervalFromUrl() {
+      this.interval = this.$route.query.hasOwnProperty('interval')
+        ? parseInt(this.$route.query.interval)
+        : DEFAULT_INTERVAL
+    }
+  }
 }
 </script>
 

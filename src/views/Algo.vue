@@ -16,17 +16,8 @@
             <time-interval v-model="timeInterval" />
           </b-col>
         </b-row>
-
-        <b-row>
-          <b-col>
-            <router-link :to="{name: 'MasterAlgo', params: { strategyUUID, masterAlgoUUID }}">
-              <b-button class="px-5"> Back </b-button>
-            </router-link>
-          </b-col>
-        </b-row>
       </b-col>
 
-      <!-- Stats -->
       <b-col class="pl-5">
         <b-card>
           <p>Total trades {{ amountOfTrades }}</p>
@@ -44,50 +35,46 @@
       </b-col>
     </b-row>
 
-    <b-row>
-      <b-col cols="3">
-        <!-- currencies -->
-        <b-card class="mt-4" v-if="proto.prototypeNo">
-          <proto-currency v-for="currencyPair in currencyPairs" :key="currencyPair" 
-            :protoNo="protoNo"
-            :currency="currencyPair"
-            :trades="currencyPairTrades(currencyPair)"
-            :timeInterval="timeInterval"
-          />
-        </b-card>
-      </b-col>
+    <!-- currencies -->
+    <b-card class="mt-4">
+      <b-row v-if="proto.prototypeNo">
+        <proto-currency v-for="currency in currencies" :key="currency"
+          :protoNo="protoNo"
+          :currency="currency"
+          :trades="currencyTrades[currency]"
+          :timeInterval="timeInterval"
+        />
+      </b-row>
+    </b-card>
 
-      <b-col>
-        <!--Overall Performance -->
-        <b-card class="my-4">
-          <b-row>
-            <b-col class="sm">
-              <p>Overall Trades</p>
-              <div class="bar-graph trades"></div>
-            </b-col>
+    <!--Overall Performance -->
+    <b-card class="my-4">
+      <b-row>
+        <b-col class="sm">
+          <p>Overall Trades</p>
+          <div class="bar-graph trades"></div>
+        </b-col>
 
-            <b-col class="sm">
-              <p>Overall Avg pips per trade</p>
-              <div class="bar-graph overall-avg-per-trade"></div>
-            </b-col>
+        <b-col class="sm">
+          <p>Overall Avg pips per trade</p>
+          <div class="bar-graph overall-avg-per-trade"></div>
+        </b-col>
 
-            <b-col class="sm">
-              <p>Overall performance</p>
-              <div class="bar-graph overall-performance"></div>
-            </b-col>
+        <b-col class="sm">
+          <p>Overall performance</p>
+          <div class="bar-graph overall-performance"></div>
+        </b-col>
 
-            <b-col class="sm">
-              <p>Gained: {{ tradeStats.totalPipsGained }} </p>
-              <p>Lost: {{ tradeStats.totalPipsLoss }} </p>
-              <p> {{ tradeStats.totalPipsGained -  tradeStats.totalPipsLoss  }} </p>
-              <div v-bind:id="'pieGraph' + protoNo" class="my-3 text-center"></div>
-            </b-col>
-          </b-row>
-        </b-card>
-      </b-col>
-    </b-row>
+        <b-col class="sm">
+          <p>Gained: {{ tradeStats.totalPipsGained }} </p>
+          <p>Lost: {{ tradeStats.totalPipsLoss }} </p>
+          <p> {{ tradeStats.totalPipsGained -  tradeStats.totalPipsLoss  }} </p>
+          <div v-bind:id="'pieGraph' + protoNo" class="my-3 text-center"></div>
+        </b-col>
+      </b-row>
+    </b-card>
 
-    <b-button class="mt-3" v-on:click="showOanda = !showOanda"> Oanda </b-button>
+    <b-button v-on:click="showOanda = !showOanda">Oanda</b-button>
 
     <!-- Oanda Overall Performance -->
     <b-row class="my-4" v-if="algorithmIsPublished && showOanda">
@@ -113,11 +100,11 @@
       </b-col>
     </b-row>
 
-    <!-- <trade-analysis :trades="trades" :prototypeNo="protoNo" :interval="timeInterval" 
+    <trade-analysis :trades="trades" :prototypeNo="protoNo"  :interval="timeInterval" 
       :filteredDate="filteredDate"
-    /> -->
+    />
 
-    <!-- <timezone-analysis :trades="trades" /> -->
+    <timezone-analysis :trades="trades" />
 
     <b-spinner variant="primary" label="Spinning" v-if="loading" />
   </app-template>
@@ -138,7 +125,6 @@ import { mapGetters, mapActions } from 'vuex'
 import { beginningOfDay } from '@/services/utils';
 import TradeAnalysis from './children/TradeAnalysis'
 import TimezoneAnalysis from './children/TimezoneAnalysis';
-import { abbrevToSymbol } from '@/services/utils';
 
 export default {
   components: {
@@ -179,26 +165,7 @@ export default {
       })
     },
 
-
-    strategyUUID() {
-      return this.routeParamExists('strategyUUID') 
-        ? this.$route.params.strategyUUID
-        : null 
-    },
-
-    masterAlgoUUID() {
-      return this.routeParamExists('masterAlgoUUID')
-        ? this.$route.params.masterAlgoUUID 
-        : null
-    },
-
-    currencyPairs() {
-      return  [ ...new Set(this.trades.map((x) => abbrevToSymbol(x.abbrev))) ]
-    },
-
     currencyTrades() {
-      console.log('get currency trades')
-
       const currencyTrades = {
         GBP: [],
         EUR: [],
@@ -206,15 +173,6 @@ export default {
         AUD: []
       };
       const currencies = Object.keys(currencyTrades);
-
-      console.log(this.trades)
-
-      const abbrevs = [...new Set(this.trades.map((x) => x.abbrev))]
-
-      console.log(abbrevs)
-
-      // const currencyTrades = {}
-      // abbre
 
       currencies.forEach((currency) => {
         currencyTrades[currency] = this.trades.filter((trade) => 
@@ -352,22 +310,12 @@ export default {
   },
 
   beforeMount() {
-    // this.timeInterval = parseInt(this.$route.params.interval)
+    this.timeInterval = parseInt(this.$route.params.interval)
     this.uploadProto()
     this.uploadTrades()
   },
 
   methods: {
-    currencyPairTrades(currencyPair) {
-      return this.trades.filter((x) => abbrevToSymbol(x.abbrev) === currencyPair)
-    },
-
-    routeParamExists(param) {
-      console.log(typeof(this.$route.params))
-
-      return this.$route.params.hasOwnProperty(param)
-    },
-
     objectKey(object) { return Object.keys(object) },
 
     uploadTrades() {
@@ -415,22 +363,21 @@ export default {
       buildBarGraph(graphData, 'overall-performance')
     },
 
-    // buildOverallOandaPerformanceGraph(performance) {
-    //   const graphData = [
-    //     {
-    //       labeL 
-    //     }
-    //   ]
-    // }
+    buildOverallOandaPerformanceGraph(performance) {
+      const graphData = [
+        {
+          labeL 
+        }
+      ]
+    }
   },
 
   watch: {
     timeInterval(value) {
-      this.uploadTrades()
-      // this.$router.push({name: 'PrototypeAnalysis', params: {
-      //   no: this.protoNo,
-      //   interval: value}
-      // }
+      this.$router.push({name: 'PrototypeAnalysis', params: {
+        no: this.protoNo,
+        interval: value}
+      })
     },
 
     '$route'(value) {

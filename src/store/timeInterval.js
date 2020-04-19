@@ -47,7 +47,6 @@ const timeIntervalStore = {
   getters: {
     selectOptions: (state) => state.selectOptions,
     interval: (state) => state.interval
-    
   }
 }
 

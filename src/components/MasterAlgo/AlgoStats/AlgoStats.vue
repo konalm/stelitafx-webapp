@@ -2,11 +2,18 @@
   <li class="list-group-item">
     <b-row>
       <b-col>
+        {{ protoNo }}
         <p class="mb-2"> {{ description }} </p>
         <p> <small> pips {{ pipsPerformance.total }} </small> </p>
         <p> <small> trades {{ tradeAmount }} </small> </p>
         <p> <small> winning trade {{ tradePerformance.winPercent }} % </small> </p>
         <p> <small>  avg pips per trade {{ avgPerformance.total }} </small> </p>
+
+        <router-link :to="{name: 'Algo', params: 
+          { strategyUUID, masterAlgoUUID, no: protoNo }
+        }">
+          <b-button variant="primary" class="mt-3"> View </b-button>
+        </router-link>
       </b-col>
 
       <b-col>
@@ -47,6 +54,11 @@ export default {
   props: {
     algoId: {
       type: Number,
+      required: true
+    },
+
+    strategyUUID: {
+      type: String,
       required: true
     },
 

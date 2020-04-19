@@ -3,10 +3,6 @@
     <b-row>
       <b-col>
         <p><small>trades {{ tradeAmount }}</small></p>
-        <!-- <p><small>winning trades {{ winningTrades }}</small></p> -->
-        <!-- <p><small>avg gain per win {{ avgGainPerWin }}</small></p> -->
-        <!-- <p><small>losing trade {{ losingTrades }} </small></p> -->
-        <!-- <p><small>avg loss per trade {{ avgLossPerLosing }}</small></p> -->
       </b-col>
 
       <b-col>

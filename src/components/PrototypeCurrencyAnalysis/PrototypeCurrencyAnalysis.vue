@@ -1,7 +1,6 @@
 <template>
   <app-template>
     <b-row>
-
       <!-- header & filters -->
       <b-col>
         <p class="lead">Prototype: {{ protoNo }}</p>
@@ -160,7 +159,8 @@ export default {
       subView: 1,
       graphLoading: false,
       trades: [],
-      filteredDate: beginningOfDay(0)
+      filteredDate: beginningOfDay(0),
+      timeInterval: 1
     }
   },
 
@@ -170,9 +170,9 @@ export default {
 
 
   computed: {
-    timeInterval() {
-      return parseInt(this.$route.params.interval)
-    },
+    // timeInterval() {
+    //   return parseInt(this.$route.params.interval)
+    // },
 
     algorithmIsPublished() {
       return this.$store.getters['algorithm/isPublished']({
@@ -260,14 +260,24 @@ export default {
 
   methods: {
     async uploadTrades() {
+      console.log('UPLOAD TRADES')
+
       let path = `/protos/${this.protoNo}/intervals/${this.timeInterval}/currency/${this.baseCurrency}/trades`
       if (this.filteredDate) path += `?date=${this.filteredDate}`
 
+      console.log(path)
+
+      let trades
       try {
-        this.trades = await getHttpRequest(path)
+        trades = await getHttpRequest(path)
       } catch (e) {
         console.error(`Failed to upload trades: ${e}`)
       }
+
+      console.log('trades >>')
+      console.log(trades)
+
+      this.trades = trades 
     },
 
     changeSubView(viewNo) {
@@ -320,9 +330,6 @@ export default {
       }
 
       const lineGraphData = this.dataFormatForLineGraph(wmaDataPoints);
-
-      console.log('line graph data >>>')
-      console.log(lineGraphData)
 
       clearLineGraph('intervalCurrencyLineGraph')
       buildLineGraph(lineGraphData, 'intervalCurrencyLineGraph', 1300, 500, 50)

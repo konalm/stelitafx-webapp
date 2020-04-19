@@ -122,3 +122,5 @@ export const hoursFromDate = (dateFrom, hours) => {
 
   return dateTo.toISOString()
 }
+
+export const abbrevToSymbol = abbrev => abbrev.replace("/", "")

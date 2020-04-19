@@ -24,8 +24,11 @@
 
 
 <script>
+const numToWords = require('number-to-words');
 import { buildLineGraph, clearLineGraph } from '@/graph/lineGraph';
 import { compareHourAndMin } from '@/services/utils';
+import wmaSettings from '@/settings/wma';
+
 
 export default {
   props: {
@@ -66,18 +69,41 @@ export default {
       if (!this.wmaData.length) return 
       if (!this.trade) return
 
-      const dataPoints = this.wmaData.map((dataPoint) => ({
-        date: dataPoint.date,
-        rate: dataPoint.rate,
-        openRate: this.trade.openRate,
-        closeRate: this.trade.closeRate,
-        fiveWMA: dataPoint.WMAs["5"],
-        twelveWMA: dataPoint.WMAs["12"],
-        fifteenWMA: dataPoint.WMAs["15"],
-        thirtySixWMA: dataPoint.WMAs["36"],
-        twoHundredWMA: dataPoint.WMAs["200"]
-      }));
-      let details = [
+      // console.log(this.wmaData)
+      // console.log(wmaSettings)
+
+      const wmas = wmaSettings.find((x) => x.protoNo === this.protoNo).wmas
+
+      // console.log('wmas >>')
+      // console.log(wmas)
+
+      // const dataPoints = this.wmaData.map((dataPoint) => ({
+      //   date: dataPoint.date,
+      //   rate: dataPoint.rate,
+      //   openRate: this.trade.openRate,
+      //   closeRate: this.trade.closeRate,
+      //   fiveWMA: dataPoint.WMAs["5"],
+      //   twelveWMA: dataPoint.WMAs["12"],
+      //   fifteenWMA: dataPoint.WMAs["15"],
+      //   thirtySixWMA: dataPoint.WMAs["36"],
+      //   twoHundredWMA: dataPoint.WMAs["200"]
+      // }));
+
+      const dataPoints = []
+      this.wmaData.forEach((x) => {
+        let dataPoint = {
+          date: x.date,
+          rate: x.rate,
+          openRate: this.trade.openRate,
+          closeRate: this.trade.closeRate,
+        }
+        wmas.forEach((y) => {
+          dataPoint[y] = x.WMAs[`${y}`] 
+        })
+        dataPoints.push(dataPoint)
+      })
+
+      const details = [
         {
           key: 'rate',
           colour: 'black',
@@ -92,33 +118,47 @@ export default {
           width: 1,
         }
       ];
+      wmas.forEach((x, i) => {
+        let colour = 'blue' 
+        if (i > 0)  colour = 'red'
+        else colour = 'green'
 
-      const protoNo = parseInt(this.protoNo);
+        details.push({
+          key: x,
+          colour,
+          width: 1
+        })
+      })
 
-      if (
-        protoNo === 1 || 
-        protoNo === 2 || 
-        protoNo === 3 || 
-        protoNo === 7 ||
-        protoNo === 71 ||
-        protoNo === 72 ||
-        protoNo === 73 ||
-        protoNo === 74 ||
-        protoNo === 14 ||
-        protoNo === 85 ||
-        protoNo === 92 ||
-        protoNo === 95 ||
-        protoNo === 96
-      ) {
-        details = details.concat(this.wmaDetailsForProtoOneAndTwo)
-        details = details.concat(this.wma200)
-      }
+      // console.log('details >>')
+      // console.log(details)
 
-      if (protoNo === 5 || protoNo === 51) details = details.concat(this.wmaDetails5And15)
-      if (protoNo === 4 || protoNo === 6) details = details.concat(this.wmaDetails5And12)
-      if (protoNo === 15) details = details.concat(this.wma200)
-      if (protoNo === 101) details = details.concat(this.wma200)
-      if (protoNo === 200) details = details.concat(this.wma200)
+      // const protoNo = parseInt(this.protoNo);
+
+      // if (
+      //   protoNo === 1 || 
+      //   protoNo === 2 || 
+      //   protoNo === 3 || 
+      //   protoNo === 7 ||
+      //   protoNo === 71 ||
+      //   protoNo === 72 ||
+      //   protoNo === 73 ||
+      //   protoNo === 74 ||
+      //   protoNo === 14 ||
+      //   protoNo === 85 ||
+      //   protoNo === 92 ||
+      //   protoNo === 95 ||
+      //   protoNo === 96
+      // ) {
+      //   details = details.concat(this.wmaDetailsForProtoOneAndTwo)
+      //   details = details.concat(this.wma200)
+      // }
+
+      // if (protoNo === 5 || protoNo === 51) details = details.concat(this.wmaDetails5And15)
+      // if (protoNo === 4 || protoNo === 6) details = details.concat(this.wmaDetails5And12)
+      // if (protoNo === 15) details = details.concat(this.wma200)
+      // if (protoNo === 101) details = details.concat(this.wma200)
+      // if (protoNo === 200) details = details.concat(this.wma200)
 
       return { dataPoints, details };
     },

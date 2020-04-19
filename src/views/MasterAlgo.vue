@@ -4,6 +4,10 @@
       <b-row>
         <b-col>
           <p class="lead">{{ masterAlgo.description }}</p>
+
+          <router-link :to="{name: 'Strategy', params: { UUID: strategyUUID }}">
+            <b-button class="mt-3"> back </b-button>
+          </router-link>
         </b-col>
 
         <b-col>
@@ -13,10 +17,9 @@
 
       <ul class="list-group mt-4">
         <algo-item v-for="id in masterAlgo.algorithmIds" :key="id" :algoId="id"
+          :strategyUUID="strategyUUID"
           :masterAlgoUUID="masterAlgoUUID"
         />
-
-        <!-- <algo-item :algoId="120"  /> -->
       </ul>
     </b-container>
   </app-template>
