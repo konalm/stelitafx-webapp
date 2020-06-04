@@ -33,6 +33,8 @@
                   </span>
                 </b>
               </p>
+
+              <p class="lead mt-4"> {{ performance }} </p>
             </b-card>
           </b-col>
         </b-row>
@@ -139,7 +141,7 @@ import Trade from '@/components/patterns/TradeSummaryCard';
 import DateFilter from '@/components/patterns/DateFilter';
 import { mapGetters, mapActions } from 'vuex';
 import TimeInterval from '@/components/patterns/TimeInterval';
-import { beginningOfDay } from '@/services/utils';
+import { beginningOfDay, percentage } from '@/services/utils';
 
 
 export default {
@@ -251,7 +253,11 @@ export default {
 
     protoNo() { return parseInt(this.$route.params.no) },
 
-    baseCurrency() { return this.$route.params.currency }
+    baseCurrency() { return this.$route.params.currency },
+
+    performance() {
+      return percentage(this.totalPips.gained, this.totalPips.loss)
+    }
   },
 
   mounted() {

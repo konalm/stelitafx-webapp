@@ -1,8 +1,7 @@
 <template>
   <div>
-    <line-graph :dataPoints="lineGraphRatesWma"
-      :details="lineGraphRatesWmaDetails"
-      domClassName="simulator_trade-analysis_wma"
+    <line-graph :dataPoints="lineGraphRatesWma" :details="lineGraphRatesWmaDetails"
+      :domClassName="domClassName"
     />
   </div>
 </template>
@@ -19,6 +18,11 @@ export default {
     periods: {
       type: Array,
       default: []
+    },
+
+    domClassName: {
+      type: String,
+      default: ''
     }
   },
 
@@ -27,8 +31,8 @@ export default {
       return [...this.periods].map((x) => ({
         date: x.date,
         rate: x.exchange_rate,
-        wma150: x.wma[150],
-        wma200: x.wma[200]
+        wma5: x.wma[5],
+        wma15: x.wma[15]
       }))
     },
 
@@ -40,12 +44,12 @@ export default {
           width: 1
         },
         {
-          key: 'wma150',
+          key: 'wma5',
           colour: 'blue',
           width: 1
         },
         {
-          key: 'wma200',
+          key: 'wma15',
           colour: 'red',
           width: 1
         }

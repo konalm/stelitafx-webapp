@@ -3,9 +3,7 @@
     <b-card v-bind:class="{'highlight': active}">
       <p> {{ formatDate(openTrade.date) }} - {{ formatDate(closeTrade.date) }} </p>
       <p> {{ formatTime(openTrade.date) }} - {{ formatTime(closeTrade.date) }} </p>
-      <p> {{ stats.pips }} </p>
-      <p> Duration   {{ stats.duration }} </p>
-      <p> Triggered stop loss: {{ closeTrade.triggeredStopLoss }} </p>
+      <p> pips {{ pips }}  </p>
     </b-card>
   </b-col>
 </template>
@@ -13,6 +11,7 @@
 
 <script>
 import { formatDate, formatTime } from '@/services/utils'
+import pipCalculator from '@/services/pipCalculator';
 
 const trade = {
   abbrev: '',
@@ -25,10 +24,6 @@ export default {
   props: {
     openTrade: trade,
     closeTrade: trade,
-    stats: {
-      pips: 0.00,
-      duration: 0
-    },
     active: {
       type: Boolean,
       default: false
@@ -42,6 +37,12 @@ export default {
 
     formatTime(date) {
       return formatTime(date)
+    }
+  },
+
+  computed: {
+    pips() {
+      return pipCalculator(this.openTrade.exchange_rate, this.closeTrade.exchange_rate, 'GBPCAD')
     }
   }
 }

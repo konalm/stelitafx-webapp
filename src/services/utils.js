@@ -124,3 +124,10 @@ export const hoursFromDate = (dateFrom, hours) => {
 }
 
 export const abbrevToSymbol = abbrev => abbrev.replace("/", "")
+
+export const percentage = (gained, lost) => {
+  const wholeNumber = gained + lost;
+  const division = gained / wholeNumber
+
+  return division * 100;
+}

@@ -3,6 +3,7 @@
     <b-row>
       <b-col>
         {{ protoNo }}
+        {{ filteredDate }}
         <p class="mb-2"> {{ description }} </p>
         <p> <small> pips {{ pipsPerformance.total }} </small> </p>
         <p> <small> trades {{ tradeAmount }} </small> </p>
@@ -65,6 +66,16 @@ export default {
     masterAlgoUUID: {
       type: String,
       required: true
+    },
+
+    timeInterval: {
+      type: Number,
+      required: true
+    },
+
+    filteredDate: {
+      type: Date,
+      required: true
     }
   },
 
@@ -95,7 +106,7 @@ export default {
 
   methods: {
     uploadStats() {
-      fetchAlgoStats(this.algoId, 5)()
+      fetchAlgoStats(this.algoId, this.timeInterval, this.filteredDate)()
         .then(res => {
           this.protoNo = res.protoNo
           this.description = res.description
@@ -109,6 +120,15 @@ export default {
             masterAlgoUUID: this.masterAlgoUUID
           })
         })
+    }
+  },
+
+  watch: {
+    timeInterval() {
+      this.uploadStats()
+    },
+    filteredDate() {
+      this.uploadStats()
     }
   }
 }

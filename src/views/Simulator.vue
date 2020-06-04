@@ -6,12 +6,38 @@
       <b-row class="mt-3">
         <!-- performance summary -->
         <b-col cols lg="3">
-          <performance-summary :trades="simulatedTrades" :stats="stats" />
+          <performance-summary :performance="performance" />
         </b-col>
 
-        <!-- Analyse a trade -->
         <b-col>
-          <analyse-trade :trade="activeTrade" />
+          <!-- <b-row>
+            <duration-period gran="H12" />
+          </b-row> -->
+
+          <!-- <b-row>
+            <duration-period gran="H6" />
+          </b-row> -->
+
+          <!-- <b-row>
+            <duration-period gran="H4" />
+          </b-row> -->
+
+          <b-row>
+            <duration-period gran="H2" />
+          </b-row>
+
+          <b-row>
+            <duration-period gran="H1" />
+          </b-row>
+
+          <b-row>
+            <duration-period gran="M5" />
+          </b-row>
+   
+          <!-- Analyse a trade -->
+          <b-row>
+            <analyse-trade :trade="activeTrade" />
+          </b-row>
         </b-col>
       </b-row>
 
@@ -22,7 +48,6 @@
           :active="trade.open.date === activeTrade.open.date"
           :openTrade="trade.open"
           :closeTrade="trade.close"
-          :stats="trade.stats"
           v-on:click="updateActiveTrade(index)"
         />
       </b-row>
@@ -39,13 +64,16 @@ import AbbrevFilter from '@/components/patterns/AbbrevFilter';
 import PerformanceSummary from '@/components/Simulator/PerformanceSummary';
 import LineGraph from '@/components/patterns/LineGraph';
 import { beginningOfDay } from '@/services/utils';
-import { getSimulatedHistory } from '@/http/simulate-history';
+import { getSimulatedHistory, fetchSimulatedPerformance } from '@/http/simulate-history';
 import SimulatedTradeSummary from '@/components/Simulator/SimulatedTradeSummary';
 import AnalyseTrade from '@/components/Simulator/AnalyseTrade';
-import { fetchCachedCalcPeriods } from '@/http/simulate-history';
+// import { fetchCachedCalcPeriods } from '@/http/simulate-history';
 import endpoints from '@/endpoints';
 import { get } from '@/http/httpRequest';
 import AllPeriodReview from '@/components/Simulator/AllPeriodReview'
+import DurationPeriod from '@/components/Simulator/DurationPeriod';
+// import WmaGraph from '@/components/Simulator/AnalyseTrade/WmaGraph';
+
 
 
 export default {
@@ -58,7 +86,9 @@ export default {
     AnalyseTrade,
     PerformanceSummary,
     LineGraph,
-    AllPeriodReview
+    AllPeriodReview,
+    DurationPeriod
+    // WmaGraph
   },
 
   data() {
@@ -68,9 +98,11 @@ export default {
       abbrev: 'GBP',
       simulatedTrades: [],
       stats: {},
+      performance: {},
       activeTrade: {},
       name: '',
-      reviewPeriods: false
+      reviewPeriods: false,
+      periods: []
     }
   },
 
@@ -87,28 +119,24 @@ export default {
 
   methods: {
     uploadSimulatedHistory() {
-      getSimulatedHistory(this.timeInterval, this.abbrev)()
+      fetchSimulatedPerformance()()
         .then(res => {
+          console.log('fetch sim per res -->')
+          console.log(res)
+
           this.simulatedTrades = res.trades
-          this.stats = res.stats
+          this.performance = res.performance
+          // this.stats = res.stats
         })
     },
 
     updateActiveTrade(index) {
       this.activeTrade = this.simulatedTrades[index]
     },
+
   },
 
   watch: {
-    timeInterval() {
-      this.uploadSimulatedHistory()
-    },
-    filteredDate() {
-      this.uploadSimulatedHistory()
-    },
-    abbrev() {
-      this.uploadSimulatedHistory()
-    },
     simulatedTrades(value) {
       if (!value.length) return
 

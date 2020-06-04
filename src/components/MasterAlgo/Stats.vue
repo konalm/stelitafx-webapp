@@ -1,35 +1,42 @@
 <template>
-  <b-card>
-    <b-row>
-      <b-col>
-        <p><small>trades {{ tradeAmount }}</small></p>
-      </b-col>
+  <div>
+    <b-card>
+      <b-row>
+        <b-col>
+          <p><small>trades {{ tradeAmount }}</small></p>
+          <p><small>Gained {{ pipsGained }}</small></p>
+          <p><small>Lost {{ pipsLost }}</small></p>
+          <p><small>{{ pipsOverall }}</small></p>
+        </b-col>
 
-      <b-col>
-        <p><small> trades </small></p>
-        <trade-performance-graph :protoNo="0" :performance="trades" 
-          domClass="master-algo-trades" 
-        />
-      </b-col>
+        <b-col>
+          <p><small> trades </small></p>
+          <trade-performance-graph :protoNo="0" :performance="trades" 
+            domClass="master-algo-trades" 
+          />
+        </b-col>
 
-      <b-col>
-        <p><small> avg </small></p>
-        <trade-performance-graph :protoNo="0" :performance="avg" 
-          domClass="master-algo-avg"
-        />
-      </b-col>
+        <b-col>
+          <p><small> avg </small></p>
+          <trade-performance-graph :protoNo="0" :performance="avg" 
+            domClass="master-algo-avg"
+          />
+        </b-col>
 
-      <b-col>
-        <pips-performance-graph :protoNo="0" :performance="pips" />
-      </b-col>
-    </b-row>
-  </b-card>
+        <b-col>
+          <pips-performance-graph :protoNo="0" :performance="pips" />
+          {{ pipsOverallPer }}
+        </b-col>
+      </b-row>
+    </b-card>
+  </div>
 </template>
 
 
 <script>
 import TradePerformanceGraph from '@/components/MasterAlgo/AlgoStats/TradePerformanceGraph';
 import PipsPerformanceGraph from '@/components/MasterAlgo/AlgoStats/PipsPerformanceGraph';
+import { calcPercentangeOfGain } from '@/services/utils';
 
 
 export default {
@@ -46,6 +53,10 @@ export default {
   },
 
   computed: {
+    allTrades() {
+      return this.stats.map((x) => x.performance.trades.winning + x.performance.trades.losing )
+    },
+
     stats() {
       return this.$store.getters['algorithm/masterAlgoStats'](this.masterAlgoUUID)
     },
@@ -75,6 +86,22 @@ export default {
       return this.stats.reduce((losingTrades, x) => 
         losingTrades + x.performance.trades.losing, 0
       )
+    },
+
+    pipsOverall() {
+      return this.pipsGained - this.pipsLost
+    },
+
+    pipsOverallPer() {
+      return calcPercentangeOfGain(this.pipsGained, this.pipsLost)
+    },
+
+    pipsGained() {
+      return this.stats.reduce((pipsGained, x) => pipsGained + x.performance.pips.winning, 0)
+    },
+
+    pipsLost() {
+      return this.stats.reduce((pipsLost, x) => pipsLost + x.performance.pips.losing, 0)
     },
 
     avg() {

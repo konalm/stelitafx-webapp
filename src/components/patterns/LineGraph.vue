@@ -24,6 +24,18 @@ export default {
     details: {
       type: Array,
       default: false 
+    },
+
+    width: {
+      type: Number,
+      default: 950,
+      required: false
+    },
+
+    height: {
+      type: Number,
+      default: 400,
+      required: false
     }
   },
 
@@ -47,8 +59,10 @@ export default {
 
   methods: {
     updateGraph() {
+      if (!this.graphFormattedData) return 
+
       clearLineGraph(this.domClassName);
-      buildLineGraph(this.graphFormattedData, this.domClassName, 950, 400)
+      buildLineGraph(this.graphFormattedData, this.domClassName, this.width, this.height)
     }
   },
 

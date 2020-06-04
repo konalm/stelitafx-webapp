@@ -1,6 +1,8 @@
 <template>
   <section>
-    <wma-graph :periods="periods" v-if="!loading" />  
+    <wma-graph :periods="periods" v-if="!loading" 
+      domClassName="analysetrade__analyse_wma" 
+    />  
     <b-spinner variant="primary" label="Spinning" v-if="loading" />
   </section>
 </template>
@@ -41,7 +43,7 @@ export default {
       const fromDate = this.trade.open.date 
       const toDate = this.trade.close.date 
 
-      fetchCachedCalcPeriods(fromDate, toDate, BUFFER)()
+      fetchCachedCalcPeriods(fromDate, toDate, BUFFER, 'M5')()
         .then((res) => {
           this.periods = res
         })

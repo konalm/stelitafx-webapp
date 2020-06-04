@@ -16,6 +16,7 @@ import CandlePatterns from '@/views/CandlePatterns';
 const Strategies = () => import('@/views/Strategies');
 const Strategy = () => import('@/views/Strategy');
 const MasterAlgo = () => import('@/views/MasterAlgo');
+const BacktestData = () => import('@/views/BacktestData');
 
 
 Vue.use(Router);
@@ -108,6 +109,11 @@ export default new Router({
       name: 'CandlePatterns',
       component: CandlePatterns
     },
+    {
+      path: '/backtest-data',
+      name: 'BacktestData',
+      component: BacktestData
+    }
   ],
 
   mode: 'history',

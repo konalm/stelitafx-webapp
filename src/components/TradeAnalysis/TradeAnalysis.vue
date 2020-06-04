@@ -89,9 +89,25 @@
       </b-col>
     </b-row>
 
+    <higher-gran-line-graph :protoNo="protoNo" gran="H2" :currency="currency" 
+      :tradeUUID="tradeUUID"
+      :trade="trade"
+      :tradeOpenIndex="tradeOpenIndex"
+      :tradeCloseIndex="tradeCloseIndex"
+    />
+    
+    <higher-gran-line-graph :protoNo="protoNo" gran="H1" :currency="currency" 
+      :tradeUUID="tradeUUID"
+      :trade="trade"
+      :tradeOpenIndex="tradeOpenIndex"
+      :tradeCloseIndex="tradeCloseIndex"
+    />
+
+    wma data ... {{ wmaData.length }}
     <line-graph :trade="trade" :wmaData="wmaData" :protoNo="protoNo"
       :tradeOpenIndex="tradeOpenIndex"
       :tradeCloseIndex="tradeCloseIndex"
+      domId="tradeAnalysisLineGraph"
     />
 
     <stochastic-line-graph :abbrev="currency" :tradeId="tradeId" :tradeUUID="tradeUUID"
@@ -137,6 +153,7 @@ import MacdGraph from '@/components/patterns/MacdGraph';
 import MacdHistogramGraph from '@/components/patterns/MacdHistogramGraph';
 import { getCandlesForTrade } from '@/http/candles';
 import { drawChart as drawCandlestickGraph, clearCandlestickGraph } from '@/graph/candlestickGraph'; 
+import HigherGranLineGraph from './children/HigherGranLineGraph'
 
 export default {
   components: {
@@ -147,7 +164,8 @@ export default {
     StochasticLineGraph,
     AdxGraph,
     MacdGraph,
-    MacdHistogramGraph
+    MacdHistogramGraph,
+    HigherGranLineGraph
   },
 
   data() {
@@ -348,6 +366,10 @@ export default {
       const path = `/wma/${this.protoNo}/interval/${this.timeInterval}/${this.currency}/trade/${this.tradeUUID}?buffer=${this.buffer}`
       getHttpRequest(path)
         .then(res => {
+
+          console.log('wma data response for trade analysis ----> ' + this.timeInterval)
+          console.log(res)
+
           this.wmaData = res;
         })
         .catch(err => {

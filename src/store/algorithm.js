@@ -30,7 +30,7 @@ const algorithmStore = {
     },
 
     updateAlgoStat(state, payload) {
-      state.algoStats[payload.index] = payload.algo
+      state.algoStats.splice(payload.index,1, payload.algo)
     },
 
     addAlgo(state, payload) {

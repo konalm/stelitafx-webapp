@@ -33,6 +33,7 @@ export default {
         { value: beginningOfDay(0), text: 'Today' },
         { value: beginningOfDay(1), text: 'Last 2 days' },
         { value: beginningOfDay(2), text: 'Last 3 days' },
+        { value: beginningOfDay(3), text: 'Last 4 days' },
         { value: beginningOfDay(6), text: 'Week' },
         { value: beginningOfDay(13), text: 'Two weeks' },
         { value: getDateFromMonthsAgo(1), text: 'One month' },

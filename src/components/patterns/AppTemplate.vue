@@ -43,10 +43,10 @@ export default {
         //   name: 'Currencies',
         //   txt: 'Currencies'
         // },
-        // {
-        //   name: 'Monitor',
-        //   txt: 'Monitor'
-        // },
+        {
+          name: 'Monitor',
+          txt: 'Monitor'
+        },
         {
           name: 'Charting',
           txt: 'Charting'
@@ -66,6 +66,10 @@ export default {
         {
           name: 'CandlePatterns',
           txt: 'Candle Patterns'
+        },
+        {
+          name: 'BacktestData',
+          txt: 'Backtest Data'
         }
       ]
     }

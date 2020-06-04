@@ -33,4 +33,6 @@ export const getPublishedAlgorithms = async () => {
 }
 
 
-export const fetchAlgoStats = (id, interval) => get(`algorithm/${id}/intervals/${interval}/stats`)
+export const fetchAlgoStats = (id, interval, filteredDate)  => get(
+  `algorithm/${id}/intervals/${interval}/stats?sinceDate=${filteredDate}`
+)

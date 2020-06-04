@@ -30,6 +30,49 @@ export default [
   {
     protoNo: 2895,
     wmas: [175, 200]
+  },
+  {
+    protoNo: 4033,
+    wmas: [5, 15]
+  },
+  {
+    protoNo: 8705,
+    wmas: [5, 15]
+  },
+  {
+    protoNo: 8703,
+    wmas: [5, 15]
+  },
+  {
+    protoNo: 1838,
+    wmas: [15]
+  },
+  {
+    protoNo: 9105,
+    wmas: [15]
+  },
+  {
+    protoNo: 8536,
+    wmas: [15]
+  },
+  {
+    protoNo: 8530,
+    wmas: [15]
+  },
+  {
+    protoNo: 8531,
+    wmas: [15]
+  },
+  {
+    protoNo: 8532,
+    wmas: [15]
+  },
+  {
+    protoNo: 1833,
+    wmas: [15]
+  },
+  {
+    protoNo: 9408,
+    wmas: [5, 15]
   }
-
 ]
