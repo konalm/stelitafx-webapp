@@ -69,6 +69,7 @@ export const stringHMSFromDate = (date = null) => {
   return d
 }
 
+
 /**
  *
  */
@@ -78,6 +79,7 @@ export const calcPercentangeOfGain = (gained, lost) => {
 
   return division * 100;
 }
+
 
 export const durationOfTrade = (openDateString, closeDateString) => {
   const openDate = new Date(openDateString)

@@ -36,6 +36,12 @@ export default {
       type: Number,
       default: 400,
       required: false
+    },
+
+    xTicks: {
+      type: Number,
+      default: 50,
+      required: false
     }
   },
 
@@ -62,7 +68,13 @@ export default {
       if (!this.graphFormattedData) return 
 
       clearLineGraph(this.domClassName);
-      buildLineGraph(this.graphFormattedData, this.domClassName, this.width, this.height)
+      buildLineGraph(
+        this.graphFormattedData, 
+        this.domClassName, 
+        this.width, 
+        this.height, 
+        this.xTicks
+      )
     }
   },
 

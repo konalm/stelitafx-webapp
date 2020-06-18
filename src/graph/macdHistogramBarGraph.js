@@ -12,7 +12,7 @@ export const buildBarGraph = (data, domId, _width, _height) => {
   // set the ranges
   var x = d3.scaleBand()
             .range([0, width])
-            .padding(0.1);
+            .padding(0.9);
   var y = d3.scaleLinear()
             .range([height, 0]);
 

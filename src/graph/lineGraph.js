@@ -8,12 +8,37 @@ const margin = {top: 20, right: 20, bottom: 30, left: 40};
 /**
  *
  */
-export const buildLineGraph = (data, domClassName, _width, _height, xTicks = 50) => {
+export const buildLineGraph = (data, domClassName, _width, _height, xTicks = 50, x2, y2) => {
   const width = _width - margin.left - margin.right;
   const height = _height - margin.top - margin.bottom;
 
   const dataPoints = data.dataPoints;
   const svg = buildSvg(domClassName, width, height);
+
+  // const startDate = '2020-06-15T13:30:00.000Z'
+  // const endDate = '2020-06-15T16:35:00.000Z'
+
+  // const startDateIndex = data.dataPoints.findIndex((x) => x.date === startDate )
+  // const percentageOfDate = (startDateIndex / data.dataPoints.length) * 100
+
+  // console.log(`start date index .. ${startDateIndex}`)
+  // console.log(`dates .. ${dates.length}`)
+  // console.log(`percentage of date .. ${ percentageOfDate }`)
+
+  
+
+  // svg.append("rect")
+  //   .attr("x", 0).attr("y", 0).attr("width", 200).attr("height", height)
+  //   .style("fill", "#28a745");
+
+  // svg.append("rect")
+  // .attr("x", 270).attr("y", 0).attr("width", 200).attr("height", height)
+  // .style("fill", "#dc3545");
+
+
+  // svg.append("rect")
+  // .attr("x", width - 200).attr("y", 0).attr("width", 200).attr("height", height)
+  // .style("fill", "#dc3545");
 
   // set the ranges
   const x = d3.scaleTime().range([0, width]);
@@ -33,7 +58,9 @@ export const buildLineGraph = (data, domClassName, _width, _height, xTicks = 50)
 
   // format the data
   dataPoints.forEach((d) => {
-    const formattedDate = Moment(d.date).format("YYYY-MM-DD HH:mm");
+    const date = d.date.replace("Z", "")
+    const formattedDate = Moment(date).format("YYYY-MM-DD HH:mm");
+
     d.date = parseTime(formattedDate);
   });
 
@@ -48,9 +75,23 @@ export const buildLineGraph = (data, domClassName, _width, _height, xTicks = 50)
     d3.max(dataPoints, (d) =>  {
       let keyValues = [];
       data.details.forEach((detail) => keyValues.push(d[detail.key]) )
+
+      console.log('key values -->')
+      console.log(keyValues)
+
       return Math.max(...keyValues)
     })
   ]);
+
+  console.log('DELTA -->')
+  console.log(
+    d3.max(dataPoints, (d) =>  {
+      let keyValues = [];
+      data.details.forEach((detail) => keyValues.push(d[detail.key]) )
+
+      return Math.max(...keyValues)
+    })
+  );
 
   valueLines.forEach((valueLine) => {
     appendLineToGraph(

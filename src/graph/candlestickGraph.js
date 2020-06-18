@@ -3,15 +3,16 @@ import * as _ from 'lodash';
 
 const parseDateTime = d3.timeParse('%Y-%m-%d %H:%M');
 
-export const drawChart = (_prices, domId, xTicks = 50) => {
+export const drawChart = (_prices, domId, xTicks = 70, trends) => {
   const prices = _.cloneDeep(_prices)
 
   for (var i = 0; i < prices.length; i++) {
-    const formattedDate = Moment(prices[i]['date'] ).format("YYYY-MM-DD HH:mm");
+    const date = prices[i]['date'] .replace("Z", "")
+    const formattedDate = Moment(date).format("YYYY-MM-DD HH:mm");
     prices[i]['date'] = parseDateTime(formattedDate)
   }
   
-  const margin = {top: 15, right: 65, bottom: 205, left: 50}
+  const margin = { top: 15, right: 65, bottom: 100, left: 50 }
   const w = 1350 - margin.left - margin.right
   const h = 625 - margin.top - margin.bottom;
 
@@ -22,9 +23,90 @@ export const drawChart = (_prices, domId, xTicks = 50) => {
           .attr("transform", "translate(" +margin.left+ "," +margin.top+ ")");
 
   let dates = _.map(prices, 'date');
+
+  const topHeight = Math.max(..._prices.map((x) => { return x.close }))
+  const topHeight2 = d3.max(Math.max(..._prices.map((x) => { return x.close })))
+
+  // d3.max(dataPoints, (d) =>  {
+  //   let keyValues = [];
+  //   data.details.forEach((detail) => keyValues.push(d[detail.key]) )
+  //   return Math.max(...keyValues)
+  // })
+
+  // console.log(_prices[0])
+  // d3.max()
+
+  console.log(`top height .. ${topHeight}`)
+  console.log(`top height 2 ... ${topHeight2}`)
+    
+
+  trends.forEach((trend) => {
+    const startDateIndex = _prices.findIndex((x) => x.date === trend.timeline.start )
+    const percentageOfStartDate = (startDateIndex / _prices.length) * 100
+
+    const endDateIndex = _prices.findIndex((x) => x.date === trend.timeline.end)
+    const percentageOfEndDate = (endDateIndex / _prices.length) * 100
+    const scale = percentageOfEndDate - percentageOfStartDate 
+
+    const trendXPos = ( w / 100 ) * percentageOfStartDate
+    const trendXWidth = ( w / 100 ) * scale
+
+    let colour 
+    switch (trend.trend) {
+      case 'up':
+        colour = '#28a745';
+        break;
+      case 'down':
+        colour = '#dc3545';
+        break;
+      case 'congestion':
+        colour = '#286ca7';
+    }
+
+    svg.append("rect")
+      .attr("x", trendXPos).attr("y", 0).attr("width", trendXWidth).attr("height", h)
+      .style("fill", colour)
+      .style("opacity", 0.4);
+    
+    if (trend.trend === 'congestion') {
+      // console.log('congestion')
+      // console.log(trend.ceiling)
+      // console.log(trend.floor)
+
+
+
+      // svg.append("line")          
+      //   .style("stroke", colour)  
+      //   .attr("x1", trendXPos)    
+      //   .attr("y1", 50)     
+      //   .attr("x2", trendXWidth)    
+      //   .attr("y2", 50); 
+
+      svg.append("rect")
+        .attr("x", trendXPos).attr("y", 52).attr("width", trendXWidth).attr("height", 3)
+        .style("fill", colour)
+        .style("opacity", 1.0);
+
+      // svg.append("line").attr("x1", 100).attr("y1", 100).attr("x2", 200).attr("y2", 200)
+      
+    }
+  })
+ 
+
+  // if (x) {
+  //   const trendXPos = ( w / 100 ) * x
+  //   const trendXWidth = ( w / 100 ) * y
+
+  //   console.log(`trend x width .. ${ trendXWidth }`)
+  //   console.log(`width .. ${y}`)
+    
+  //   svg.append("rect")
+  //     .attr("x", trendXPos).attr("y", 0).attr("width", trendXWidth).attr("height", h)
+  //     .style("fill", "#28a745");
+  // }
   
 
-  
+
   var xScale = d3.scaleLinear().domain([0, dates.length]).range([0, w])            
   var xDateScale = d3.scaleQuantize().domain([0, dates.length]).range(dates)
   let xBand = d3.scaleBand().domain(d3.range(-1, dates.length)).range([0, w]).padding(0.4)
